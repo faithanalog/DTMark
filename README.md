@@ -12,7 +12,8 @@ for now.
 Usage
 ---
 To start, simply make a class that extends BaseGame. Then instantiate it and
-call launchGame on it. Here is an example.
+call launchGame on it. Here is a basic example. More examples may be added
+later when it is more complete.
 ```dart
 import 'package:dtmark/dtmark.dart' as DTMark;
 import 'dart:html';
