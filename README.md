@@ -15,6 +15,7 @@ To start, simply make a class that extends BaseGame. Then instantiate it and
 call launchGame on it. Here is an example.
 ```dart
 import 'package:dtmark/dtmark.dart' as DTMark;
+import 'dart:html';
 
 class Game extends DTMark.BaseGame {
 
