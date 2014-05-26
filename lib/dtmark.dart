@@ -40,16 +40,16 @@ abstract class BaseGame {
   
   Int32List _keys = new Int32List(256);
   Int32List _mouseButtons = new Int32List(32);
+  int _mouseX = 0;
+  int _mouseY = 0;
   
-  bool invertMouseY = true;
-  Vector2 mousePos;
+  bool invertMouseY = false;
   
   BaseGame(this.canvas, {double frameRate: 60.0, double tickRate: 60.0}) {
     canvas.onContextMenu.listen((Event e) => e.preventDefault());
     gl = createContext3d();
     _timePerFrame = 1 / (1000.0 / frameRate);
     _timePerTick = 1 / (1000.0 / tickRate);
-    mousePos = new Vector2.zero();
     canvas.onMouseDown.listen(onMouseDown);
     canvas.onMouseUp.listen(onMouseUp);
     canvas.onMouseMove.listen(onMouseMove);
@@ -118,29 +118,43 @@ abstract class BaseGame {
   
   void onMouseDown(MouseEvent evt) {
     Point off = evt.offset;
-    mousePos.setValues(off.x.toDouble(), off.y.toDouble());
+    _mouseX = off.x;
+    _mouseY = off.y;
     if (invertMouseY) {
-      mousePos.y = canvas.height - mousePos.y;
+      _mouseY = canvas.height - _mouseY;
     }
     _mouseButtons[evt.button] = 1;
   }
   
   void onMouseUp(MouseEvent evt) {
     Point off = evt.offset;
-    mousePos.setValues(off.x.toDouble(), off.y.toDouble());
+    _mouseX = off.x;
+    _mouseY = off.y;
     if (invertMouseY) {
-      mousePos.y = canvas.height - mousePos.y;
+      _mouseY = canvas.height - _mouseY;
     }
     _mouseButtons[evt.button] = 0;
   }
   
   void onMouseMove(MouseEvent evt) {
     Point off = evt.offset;
-    mousePos.setValues(off.x.toDouble(), off.y.toDouble());
+    _mouseX = off.x;
+    _mouseY = off.y;
     if (invertMouseY) {
-      mousePos.y = canvas.height - mousePos.y;
+      _mouseY = canvas.height - _mouseY;
     }
   }
+  
+  bool isKeyDown(int key) {
+    return _keys[key & 0xFF] != 0;
+  }
+  
+  bool isMouseDown(int btn) {
+    return _mouseButtons[btn & 0x1F] != 0;
+  }
+  
+  int get mouseX => _mouseX;
+  int get mouseY => _mouseY;
   
 }
 
