@@ -40,6 +40,16 @@ class Texture {
     return tex;
   }
   
+  factory Texture.generate(WebGL.RenderingContext gl, int width, int height, void generate(CanvasRenderingContext2D ctx, int width, int height),
+    {int minFilter: WebGL.NEAREST, int magFilter: WebGL.NEAREST, int wrapS: WebGL.CLAMP_TO_EDGE,
+    int wrapT: WebGL.CLAMP_TO_EDGE, bool mipmap: false}) {
+    
+    var elem = new CanvasElement(width: width, height: height);
+    var ctx = elem.getContext("2d") as CanvasRenderingContext2D;
+    generate(ctx, width, height);
+    return new Texture(elem, gl, minFilter: minFilter, magFilter: magFilter, wrapS: wrapS, wrapT: wrapT, mipmap: mipmap);
+  }
+  
   void uploadData(CanvasImageSource data) {
     if (data == null) {
       width = 1;
@@ -60,7 +70,6 @@ class Texture {
         gl.generateMipmap(WebGL.TEXTURE_2D);
       }
     }
-    
   }
   
   void _setSize(int width, int height) {
