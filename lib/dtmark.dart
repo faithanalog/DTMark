@@ -1,0 +1,153 @@
+library dtmark;
+
+import 'dart:html';
+import 'dart:convert';
+import 'dart:math' as Math;
+import 'dart:typed_data';
+import 'dart:web_gl' as WebGL;
+import 'dart:web_audio' as Audio;
+import 'dart:async';
+import 'package:vector_math/vector_math.dart';
+
+//part 'math/vec2.dart';
+//part 'math/vec3.dart';
+//part 'math/vec4.dart';
+//
+//part 'math/mat4.dart';
+
+//WebGL stuff
+part 'gl/shader.dart';
+part 'gl/texture.dart';
+
+//2D stuff
+part '2d/spritebatch.dart';
+part '2d/fontrenderer.dart';
+
+//Camera
+part 'camera.dart';
+
+abstract class BaseGame {
+  
+  CanvasElement canvas;
+  WebGL.RenderingContext gl;
+  
+  double _timePerFrame;
+  double _timePerTick;
+  double _missedFrames = 0.0;
+  double _missedTicks = 0.0;
+  
+  double _lastTime = -1.0;
+  
+  Int32List _keys = new Int32List(256);
+  Int32List _mouseButtons = new Int32List(32);
+  
+  bool invertMouseY = true;
+  Vector2 mousePos;
+  
+  BaseGame(this.canvas, {double frameRate: 60.0, double tickRate: 60.0}) {
+    canvas.onContextMenu.listen((Event e) => e.preventDefault());
+    gl = createContext3d();
+    _timePerFrame = 1 / (1000.0 / frameRate);
+    _timePerTick = 1 / (1000.0 / tickRate);
+    mousePos = new Vector2.zero();
+    canvas.onMouseDown.listen(onMouseDown);
+    canvas.onMouseUp.listen(onMouseUp);
+    canvas.onMouseMove.listen(onMouseMove);
+    canvas.onKeyDown.listen(onKeyDown);
+    canvas.onKeyUp.listen(onKeyUp);
+  }
+  
+  /**
+   * Creates the WebGL context. Override this to customize attributes of the context
+   */
+  WebGL.RenderingContext createContext3d() {
+    return canvas.getContext3d();
+  }
+  
+  void launchGame() {
+    window.animationFrame.then(_renderCallback);
+  }
+  
+  void _renderCallback(double time) {
+    window.animationFrame.then(_renderCallback);
+    time = window.performance.now();
+    if (_lastTime == -1) {
+      _lastTime = time;
+    }
+    double dif = time - _lastTime;
+    //Missed more than a second just do 1 calc
+    if (dif > 1000.0) {
+      _missedTicks++;
+      _missedFrames++;
+    } else {
+      _missedTicks += dif * _timePerTick;
+      _missedFrames += dif * _timePerFrame;
+    }
+    _lastTime = time;
+    
+    //Don't tolerate more than 10 ticks missed
+    if (_missedTicks > 10) {
+      _missedTicks = 10.0;
+    }
+    while (_missedTicks >= 1.0) {
+      tick();
+      _missedTicks--;
+    }
+    //Only render once no matter how many frames missed
+    if (_missedFrames >= 1.0) {
+      render();
+      _missedFrames -= _missedFrames.floor();
+    }
+  }
+  
+  void render() {
+    
+  }
+  
+  void tick() {
+    
+  }
+  
+  void onKeyDown(KeyboardEvent evt) {
+    _keys[evt.keyCode] = 1;
+  }
+  
+  void onKeyUp(KeyboardEvent evt) {
+    _keys[evt.keyCode] = 0;
+  }
+  
+  void onMouseDown(MouseEvent evt) {
+    Point off = evt.offset;
+    mousePos.setValues(off.x.toDouble(), off.y.toDouble());
+    if (invertMouseY) {
+      mousePos.y = canvas.height - mousePos.y;
+    }
+    _mouseButtons[evt.button] = 1;
+  }
+  
+  void onMouseUp(MouseEvent evt) {
+    Point off = evt.offset;
+    mousePos.setValues(off.x.toDouble(), off.y.toDouble());
+    if (invertMouseY) {
+      mousePos.y = canvas.height - mousePos.y;
+    }
+    _mouseButtons[evt.button] = 0;
+  }
+  
+  void onMouseMove(MouseEvent evt) {
+    Point off = evt.offset;
+    mousePos.setValues(off.x.toDouble(), off.y.toDouble());
+    if (invertMouseY) {
+      mousePos.y = canvas.height - mousePos.y;
+    }
+  }
+  
+}
+
+int nextPowerOf2(int val) {
+  int powof2 = 1;
+  while (powof2 < val) {
+    powof2 <<= 1;
+  }
+  return powof2;
+}

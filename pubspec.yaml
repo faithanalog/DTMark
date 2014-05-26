@@ -1,0 +1,6 @@
+name: dtmark
+version: 0.0.1
+author: unknownloner
+description: Attempt at a 3D game engine
+dependencies:
+  vector_math: any
