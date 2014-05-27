@@ -1,6 +1,8 @@
 part of dtmark;
 class Texture {
   
+  static bool allowNonPowerOf2 = false;
+  
   WebGL.RenderingContext gl;
   WebGL.Texture glTex;
   
@@ -75,12 +77,18 @@ class Texture {
   void _setSize(int width, int height) {
     this.width = width;
     this.height = height;
-    int po2w = nextPowerOf2(width);
-    int po2h = nextPowerOf2(height);
-    gl.texImage2DTyped(WebGL.TEXTURE_2D, 0, WebGL.RGBA, po2w, po2h, 0, WebGL.RGBA, WebGL.UNSIGNED_BYTE, null);
+    if (allowNonPowerOf2) {
+      gl.texImage2DTyped(WebGL.TEXTURE_2D, 0, WebGL.RGBA, width, height, 0, WebGL.RGBA, WebGL.UNSIGNED_BYTE, null);
+      maxU = 1.0;
+      maxV = 1.0;
+    } else {
+      int po2w = nextPowerOf2(width);
+      int po2h = nextPowerOf2(height);
+      gl.texImage2DTyped(WebGL.TEXTURE_2D, 0, WebGL.RGBA, po2w, po2h, 0, WebGL.RGBA, WebGL.UNSIGNED_BYTE, null);
+      maxU = width / po2w;
+      maxV = height / po2h;
+    }
 //    gl.texImage2D(WebGL.TEXTURE_2D, 0, WebGL.RGBA, po2w, po2h, 0);
-    maxU = width / po2w;
-    maxV = height / po2h;
   }
   
   void _setProperties() {
