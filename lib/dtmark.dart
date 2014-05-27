@@ -73,7 +73,6 @@ abstract class BaseGame {
   
   void _renderCallback(double time) {
     window.animationFrame.then(_renderCallback);
-    time = window.performance.now();
     if (_lastTime == -1) {
       _lastTime = time;
     }
