@@ -14,7 +14,7 @@ class SpriteBatch {
   Shader _shader;
   
   Texture whiteTex;
-  Texture _lastTex;
+  Texture _lastTex = null;
   Vector4 color = new Vector4(1.0, 1.0, 1.0, 1.0);
   int vOff = 0;
   
@@ -34,6 +34,7 @@ class SpriteBatch {
     
     _projection = makeOrthographicMatrix(0, width, 0, height, -1, 1);
     _modelView = new Matrix4.identity();
+    _lastTex = whiteTex;
     //Trigger a calc of the transform matrix
     transformChanged = true;
   }
@@ -64,7 +65,7 @@ class SpriteBatch {
   }
   
   void _switchTexture(Texture tex) {
-    if (_lastTex != tex) {
+    if (_lastTex == null || _lastTex != tex) {
       _flush();
       _texChanged = true;
       _lastTex = tex;
@@ -144,7 +145,9 @@ class SpriteBatch {
     _rendering = true;
     _texChanged = true;
     transformChanged = true;
+    color.setValues(1.0, 1.0, 1.0, 1.0);
     _shader.use();
+    _shader.setUniform1i("u_texture", 0);
     gl.enableVertexAttribArray(0);
     gl.enableVertexAttribArray(1);
     gl.enableVertexAttribArray(2);
