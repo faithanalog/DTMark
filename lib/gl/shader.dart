@@ -23,7 +23,7 @@ class Shader {
     gl.shaderSource(fragShader, fragSrc);
     gl.compileShader(fragShader);
     
-    log = gl.getShaderInfoLog(vertShader);
+    log = gl.getShaderInfoLog(fragShader);
     if (log.isNotEmpty) {
       print("FRAGMENT ERR:\n" + log);
     }

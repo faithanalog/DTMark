@@ -11,7 +11,7 @@ class SpriteBatch {
   Float32List verts = new Float32List(8 * BATCH_MAX_VERTS);
   WebGL.RenderingContext gl;
   WebGL.Buffer buffer;
-  Shader shader;
+  Shader _shader;
   
   Texture whiteTex;
   Texture _lastTex;
@@ -26,7 +26,7 @@ class SpriteBatch {
   bool transformChanged = false;
   
   SpriteBatch(this.gl, {int width: 1, int height: 1}) {
-    shader = getBatchShader(gl);
+    _shader = getBatchShader(gl);
     buffer = gl.createBuffer();
     
     whiteTex = new Texture(null, gl);
@@ -129,6 +129,14 @@ class SpriteBatch {
     transformChanged = true;
   }
   
+  set shader(Shader shader) {
+    if (shader == null) {
+      _shader = _batchShader;
+    } else {
+      _shader = shader;
+    }
+  }
+  
   Matrix4 get projection => _projection;
   Matrix4 get modelView => _modelView;
   
@@ -136,7 +144,7 @@ class SpriteBatch {
     _rendering = true;
     _texChanged = true;
     transformChanged = true;
-    shader.use();
+    _shader.use();
     gl.enableVertexAttribArray(0);
     gl.enableVertexAttribArray(1);
     gl.enableVertexAttribArray(2);
@@ -162,7 +170,7 @@ class SpriteBatch {
   void _flush() {
     if (vOff > 0) {
       if (transformChanged) {
-        shader.setUniformMatrix4fv("u_transform", false, _projection * _modelView);
+        _shader.setUniformMatrix4fv("u_transform", false, _projection * _modelView);
         transformChanged = false;
       }
       
