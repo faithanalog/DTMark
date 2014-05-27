@@ -14,7 +14,7 @@ class SpriteBatch {
   Shader shader;
   
   Texture whiteTex;
-  Texture lastTex;
+  Texture _lastTex;
   Vector4 color = new Vector4(1.0, 1.0, 1.0, 1.0);
   int vOff = 0;
   
@@ -64,10 +64,10 @@ class SpriteBatch {
   }
   
   void _switchTexture(Texture tex) {
-    if (lastTex != tex) {
+    if (_lastTex != tex) {
       _flush();
       _texChanged = true;
-      lastTex = tex;
+      _lastTex = tex;
     }
   }
   
@@ -167,7 +167,9 @@ class SpriteBatch {
       }
       
       if (_texChanged) {
-        lastTex.bind();
+        if (_lastTex != null) {
+          _lastTex.bind();
+        }
         _texChanged = false;
       }
       //Buffer streaming!

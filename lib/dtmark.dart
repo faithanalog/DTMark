@@ -26,6 +26,9 @@ part '2d/fontrenderer.dart';
 //Camera
 part 'camera.dart';
 
+//Audio
+part 'audio/streaming.dart';
+
 abstract class BaseGame {
   
   CanvasElement canvas;
