@@ -131,6 +131,8 @@ class SpriteBatch {
     }
   }
   
+  Shader get shader => _shader;
+  
   Matrix4 get projection => _projection;
   Matrix4 get modelView => _modelView;
   
@@ -220,6 +222,7 @@ void main() {
       _batchShader.bindAttribLocation(0, "a_position");
       _batchShader.bindAttribLocation(1, "a_texCoord");
       _batchShader.bindAttribLocation(2, "a_color");
+      _batchShader.link();
     }
     return _batchShader;
   }
