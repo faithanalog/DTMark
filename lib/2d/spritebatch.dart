@@ -3,8 +3,8 @@ part of dtmark;
 //TODO Add Z index (make it a vert attrib) so that things don't have to be painter's algorithim. good idea? maybe...
 class SpriteBatch {
   
-  //Max 1024 quads before flush
-  static const int BATCH_MAX_VERTS = 1024 * 6;
+  //Max 4096 quads before flush
+  static const int BATCH_MAX_VERTS = 4096 * 6;
 //  static Matrix4 _ident = new Matrix4.identity();
   
   //X,Y,U,V,R,G,B,A
@@ -16,14 +16,14 @@ class SpriteBatch {
   Texture whiteTex;
   Texture _lastTex = null;
   Vector4 color = new Vector4(1.0, 1.0, 1.0, 1.0);
-  int vOff = 0;
+  int _vOff = 0;
   
   Matrix4 _projection;
   Matrix4 _modelView;
+  Matrix4 _transform = new Matrix4.identity();
   bool _rendering = false;
   
   bool _texChanged = false;
-  bool transformChanged = false;
   
   SpriteBatch(this.gl, {int width: 1, int height: 1}) {
     _shader = getBatchShader(gl);
@@ -35,23 +35,21 @@ class SpriteBatch {
     _projection = makeOrthographicMatrix(0, width, 0, height, -1, 1);
     _modelView = new Matrix4.identity();
     _lastTex = whiteTex;
-    //Trigger a calc of the transform matrix
-    transformChanged = true;
   }
   
   void _addVert(double x, double y, double u, double v) {
-    if (vOff >= verts.length) {
+    if (_vOff >= verts.length) {
       _flush();
     }
-    verts[vOff + 0] = x;
-    verts[vOff + 1] = y;
-    verts[vOff + 2] = u;
-    verts[vOff + 3] = v;
-    verts[vOff + 4] = color.r;
-    verts[vOff + 5] = color.g;
-    verts[vOff + 6] = color.b;
-    verts[vOff + 7] = color.a;
-    vOff += 8;
+    verts[_vOff + 0] = x;
+    verts[_vOff + 1] = y;
+    verts[_vOff + 2] = u;
+    verts[_vOff + 3] = v;
+    verts[_vOff + 4] = color.r;
+    verts[_vOff + 5] = color.g;
+    verts[_vOff + 6] = color.b;
+    verts[_vOff + 7] = color.a;
+    _vOff += 8;
   }
   
   //Vertex 0 is top left, Vertex 1 is bottom right
@@ -68,7 +66,7 @@ class SpriteBatch {
   }
   
   void _switchTexture(Texture tex) {
-    if (_lastTex == null || _lastTex != tex) {
+    if (_lastTex != tex) {
       _flush();
       _texChanged = true;
       _lastTex = tex;
@@ -110,27 +108,19 @@ class SpriteBatch {
   }
   
   set projection(Matrix4 proj) {
-    if (_rendering) {
-      _flush();
-    }
     if (proj == null) {
       _projection = new Matrix4.identity();
     } else {
       _projection = proj;
     }
-    transformChanged = true;
   }
   
   set modelView(Matrix4 mview) {
-    if (_rendering) {
-      _flush();
-    }
     if (mview == null) {
       _modelView = new Matrix4.identity();
     } else {
       _modelView = mview;
     }
-    transformChanged = true;
   }
   
   set shader(Shader shader) {
@@ -147,10 +137,11 @@ class SpriteBatch {
   void begin() {
     _rendering = true;
     _texChanged = true;
-    transformChanged = true;
-    color.setValues(1.0, 1.0, 1.0, 1.0);
     _shader.use();
-    _shader.setUniform1i("u_texture", 0);
+    _transform.setFrom(_projection);
+    _transform.multiply(_modelView);
+    _shader.setUniformMatrix4fv("u_transform", false, _transform);
+    
     gl.enableVertexAttribArray(0);
     gl.enableVertexAttribArray(1);
     gl.enableVertexAttribArray(2);
@@ -174,12 +165,7 @@ class SpriteBatch {
   }
   
   void _flush() {
-    if (vOff > 0) {
-      if (transformChanged) {
-        _shader.setUniformMatrix4fv("u_transform", false, _projection * _modelView);
-        transformChanged = false;
-      }
-      
+    if (_vOff > 0) {
       if (_texChanged) {
         if (_lastTex != null) {
           _lastTex.bind();
@@ -188,11 +174,11 @@ class SpriteBatch {
       }
       //Buffer streaming!
       gl.bufferData(WebGL.ARRAY_BUFFER, verts.lengthInBytes, WebGL.STREAM_DRAW);
-      gl.bufferSubDataTyped(WebGL.ARRAY_BUFFER, 0, new Float32List.view(verts.buffer, 0, vOff));
+      gl.bufferSubDataTyped(WebGL.ARRAY_BUFFER, 0, new Float32List.view(verts.buffer, 0, _vOff));
       
-      gl.drawArrays(WebGL.TRIANGLES, 0, (vOff >> 3));
+      gl.drawArrays(WebGL.TRIANGLES, 0, (_vOff ~/ 8));
     }
-    vOff = 0;
+    _vOff = 0;
   }
   
   static Shader _batchShader;
