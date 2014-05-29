@@ -182,8 +182,9 @@ class SpriteBatch {
       if (_vOff > _maxVertsUsed) {
         _maxVertsUsed = _vOff;
       }
-      gl.bufferData(WebGL.ARRAY_BUFFER, _maxVertsUsed * 4 * 8, WebGL.STREAM_DRAW);
-      gl.bufferSubDataTyped(WebGL.ARRAY_BUFFER, 0, new Float32List.view(verts.buffer, 0, _vOff));
+//      gl.bufferData(WebGL.ARRAY_BUFFER, _maxVertsUsed * 4 * 8, WebGL.STREAM_DRAW);
+//      gl.bufferSubDataTyped(WebGL.ARRAY_BUFFER, 0, new Float32List.view(verts.buffer, 0, _vOff));
+      gl.bufferDataTyped(WebGL.ARRAY_BUFFER, new Float32List.view(verts.buffer, 0, _vOff), WebGL.STREAM_DRAW);
       
       gl.drawArrays(WebGL.TRIANGLES, 0, (_vOff ~/ 8));
     }
