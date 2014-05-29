@@ -59,13 +59,13 @@ class Texture {
       gl.texImage2DTyped(WebGL.TEXTURE_2D, 0, WebGL.RGBA, 1, 1, 0, WebGL.RGBA, WebGL.UNSIGNED_BYTE, new Uint8List.fromList([0, 0, 0, 255]));
     } else {
       if (data is ImageElement) {
-        _setSize(data.width, data.height);
+        setSize(data.width, data.height);
         gl.texSubImage2DImage(WebGL.TEXTURE_2D, 0, 0, 0, WebGL.RGBA, WebGL.UNSIGNED_BYTE, data);
       } else if (data is CanvasElement) {
-        _setSize(data.width, data.height);
+        setSize(data.width, data.height);
         gl.texSubImage2DCanvas(WebGL.TEXTURE_2D, 0, 0, 0, WebGL.RGBA, WebGL.UNSIGNED_BYTE, data);
       } else if (data is VideoElement) {
-        _setSize(data.width, data.height);
+        setSize(data.width, data.height);
         gl.texSubImage2DVideo(WebGL.TEXTURE_2D, 0, 0, 0, WebGL.RGBA, WebGL.UNSIGNED_BYTE, data);
       }
       if (mipmap) {
@@ -74,7 +74,7 @@ class Texture {
     }
   }
   
-  void _setSize(int width, int height) {
+  void setSize(int width, int height) {
     this.width = width;
     this.height = height;
     if (allowNonPowerOf2) {
