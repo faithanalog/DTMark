@@ -32,6 +32,7 @@ class SpriteBatch {
   SpriteBatch(this.gl, {int width: 1, int height: 1}) {
     _shader = getBatchShader(gl);
     buffer = gl.createBuffer();
+    gl.bindBuffer(WebGL.ARRAY_BUFFER, buffer);
     gl.bufferData(WebGL.ARRAY_BUFFER, verts.lengthInBytes, WebGL.STREAM_DRAW);
     
     whiteTex = new Texture(null, gl);
