@@ -3,8 +3,8 @@ part of dtmark;
 //TODO Add Z index (make it a vert attrib) so that things don't have to be painter's algorithim. good idea? maybe...
 class SpriteBatch {
   
-  //Max 4096 quads before flush
-  static const int BATCH_MAX_VERTS = 4096 * 6;
+  //Max 65536 quads before flush
+  static const int BATCH_MAX_VERTS = 65536 * 6;
 //  static Matrix4 _ident = new Matrix4.identity();
   
   //X,Y,U,V,R,G,B,A
@@ -17,6 +17,10 @@ class SpriteBatch {
   Texture _lastTex = null;
   Vector4 color = new Vector4(1.0, 1.0, 1.0, 1.0);
   int _vOff = 0;
+  
+  
+  //Max vertices we've actually used, we'll use this for buffer streaming so we dont use tons of vram
+  int _maxVertsUsed = 0;
   
   Matrix4 _projection;
   Matrix4 _modelView;
@@ -175,7 +179,10 @@ class SpriteBatch {
         _texChanged = false;
       }
       //Buffer streaming!
-      gl.bufferData(WebGL.ARRAY_BUFFER, verts.lengthInBytes, WebGL.STREAM_DRAW);
+      if (_vOff > _maxVertsUsed) {
+        _maxVertsUsed = _vOff;
+      }
+      gl.bufferData(WebGL.ARRAY_BUFFER, _maxVertsUsed * 4 * 8, WebGL.STREAM_DRAW);
       gl.bufferSubDataTyped(WebGL.ARRAY_BUFFER, 0, new Float32List.view(verts.buffer, 0, _vOff));
       
       gl.drawArrays(WebGL.TRIANGLES, 0, (_vOff ~/ 8));
