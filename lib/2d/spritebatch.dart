@@ -32,6 +32,7 @@ class SpriteBatch {
   SpriteBatch(this.gl, {int width: 1, int height: 1}) {
     _shader = getBatchShader(gl);
     buffer = gl.createBuffer();
+    gl.bufferData(WebGL.ARRAY_BUFFER, verts.lengthInBytes, WebGL.STREAM_DRAW);
     
     whiteTex = new Texture(null, gl);
     gl.texImage2DTyped(WebGL.TEXTURE_2D, 0, WebGL.RGBA, 1, 1, 0, WebGL.RGBA, WebGL.UNSIGNED_BYTE, new Uint8List.fromList([255, 255, 255, 255]));
@@ -179,12 +180,12 @@ class SpriteBatch {
         _texChanged = false;
       }
       //Buffer streaming!
-      if (_vOff > _maxVertsUsed) {
-        _maxVertsUsed = _vOff;
-      }
+//      if (_vOff > _maxVertsUsed) {
+//        _maxVertsUsed = _vOff;
+//      }
 //      gl.bufferData(WebGL.ARRAY_BUFFER, _maxVertsUsed * 4 * 8, WebGL.STREAM_DRAW);
-//      gl.bufferSubDataTyped(WebGL.ARRAY_BUFFER, 0, new Float32List.view(verts.buffer, 0, _vOff));
-      gl.bufferDataTyped(WebGL.ARRAY_BUFFER, new Float32List.view(verts.buffer, 0, _vOff), WebGL.STREAM_DRAW);
+      gl.bufferSubDataTyped(WebGL.ARRAY_BUFFER, 0, new Float32List.view(verts.buffer, 0, _vOff));
+//      gl.bufferDataTyped(WebGL.ARRAY_BUFFER, new Float32List.view(verts.buffer, 0, _vOff), WebGL.STREAM_DRAW);
       
       gl.drawArrays(WebGL.TRIANGLES, 0, (_vOff ~/ 8));
     }
