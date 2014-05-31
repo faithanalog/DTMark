@@ -105,7 +105,6 @@ class Sound extends PlayableAudio {
     } else {
       path += ".wav";
     }
-    print(path);
     var req = new HttpRequest();
     req.open('GET', path);
     req.responseType = 'arraybuffer';
