@@ -5,9 +5,10 @@ import 'dart:convert';
 import 'dart:math' as Math;
 import 'dart:typed_data';
 import 'dart:web_gl' as WebGL;
-import 'dart:web_audio' as Audio;
+import 'dart:web_audio' as WebAudio;
 import 'dart:async';
 import 'package:vector_math/vector_math.dart';
+import 'package:browser_detect/browser_detect.dart' as BrowserDetect;
 
 //part 'math/vec2.dart';
 //part 'math/vec3.dart';
@@ -28,6 +29,7 @@ part 'camera.dart';
 
 //Audio
 part 'audio/streaming.dart';
+part 'audio/webaudio.dart';
 
 abstract class BaseGame {
   
