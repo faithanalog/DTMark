@@ -47,7 +47,10 @@ class Shader {
   void bindAttribLocation(int index, String name) => gl.bindAttribLocation(program, index, name);
   
   void use() => gl.useProgram(program);
-  void link() => gl.linkProgram(program);
+  void link() {
+    gl.linkProgram(program);
+    uniformMap.clear();
+  }
   
   void setUniform1f(String name, double a) => gl.uniform1f(getUniformLoc(name), a);
   void setUniform2f(String name, double a, double b) => gl.uniform2f(getUniformLoc(name), a, b);
