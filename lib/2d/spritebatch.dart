@@ -3,14 +3,14 @@ part of dtmark;
 //TODO Add Z index (make it a vert attrib) so that things don't have to be painter's algorithim. good idea? maybe...
 class SpriteBatch {
   
-  //Max 65536 quads before flush
-  static const int BATCH_MAX_VERTS = 65536 * 6;
-//  static Matrix4 _ident = new Matrix4.identity();
+  //Max 65536 verts before flush
+  static const int BATCH_MAX_VERTS = 65536;
   
   //X,Y,U,V,R,G,B,A
   Float32List verts = new Float32List(8 * BATCH_MAX_VERTS);
   WebGL.RenderingContext gl;
   WebGL.Buffer buffer;
+  WebGL.Buffer indices;
   Shader _shader;
   
   Texture whiteTex;
@@ -35,6 +35,24 @@ class SpriteBatch {
     gl.bindBuffer(WebGL.ARRAY_BUFFER, buffer);
     gl.bufferData(WebGL.ARRAY_BUFFER, verts.lengthInBytes, WebGL.STREAM_DRAW);
     
+    //Generate indices
+    var indData = new Uint16List(6 * BATCH_MAX_VERTS ~/ 4);
+    var index = 0;
+    for (var i = 0; i < indData.length; i += 6) {
+      indData[i + 0] = index;
+      indData[i + 1] = index + 1;
+      indData[i + 2] = index + 2;
+      indData[i + 3] = index + 2;
+      indData[i + 4] = index + 3;
+      indData[i + 5] = index;
+      index += 4;
+    }
+    indices = gl.createBuffer();
+    gl.bindBuffer(WebGL.ELEMENT_ARRAY_BUFFER, indices);
+    gl.bufferDataTyped(WebGL.ELEMENT_ARRAY_BUFFER, indData, WebGL.STATIC_DRAW);
+    gl.bindBuffer(WebGL.ELEMENT_ARRAY_BUFFER, null);
+    
+    
     whiteTex = new Texture(null, gl);
     gl.texImage2DTyped(WebGL.TEXTURE_2D, 0, WebGL.RGBA, 1, 1, 0, WebGL.RGBA, WebGL.UNSIGNED_BYTE, new Uint8List.fromList([255, 255, 255, 255]));
     
@@ -51,24 +69,18 @@ class SpriteBatch {
     verts[_vOff + 1] = y;
     verts[_vOff + 2] = u;
     verts[_vOff + 3] = v;
-    verts[_vOff + 4] = color.r;
-    verts[_vOff + 5] = color.g;
-    verts[_vOff + 6] = color.b;
-    verts[_vOff + 7] = color.a;
+    verts.setAll(_vOff + 4, color.storage);
     _vOff += 8;
   }
   
   //Vertex 0 is top left, Vertex 1 is bottom right
   void _addQuad(double x0, double y0, double u0, double v0, double x1, double y1, double u1, double v1) {
     
-    //Top left, bottom left, bottom right, bottom right, top right, top left
+    //NEW: Top left, bottom left, bottom right, top right
     _addVert(x0, y0, u0, v0);
     _addVert(x0, y1, u0, v1);
     _addVert(x1, y1, u1, v1);
-    
-    _addVert(x1, y1, u1, v1);
     _addVert(x1, y0, u1, v0);
-    _addVert(x0, y0, u0, v0);
   }
   
   void _switchTexture(Texture tex) {
@@ -155,6 +167,7 @@ class SpriteBatch {
     gl.enableVertexAttribArray(2);
     
     gl.bindBuffer(WebGL.ARRAY_BUFFER, buffer);
+    gl.bindBuffer(WebGL.ELEMENT_ARRAY_BUFFER, indices);
     gl.vertexAttribPointer(0, 2, WebGL.FLOAT, false, 32, 0);
     gl.vertexAttribPointer(1, 2, WebGL.FLOAT, false, 32, 8);
     gl.vertexAttribPointer(2, 4, WebGL.FLOAT, false, 32, 16);
@@ -162,6 +175,7 @@ class SpriteBatch {
   
   void end() {
     _flush();
+    gl.bindBuffer(WebGL.ELEMENT_ARRAY_BUFFER, null);
     gl.disableVertexAttribArray(0);
     gl.disableVertexAttribArray(1);
     gl.disableVertexAttribArray(2);
@@ -181,8 +195,7 @@ class SpriteBatch {
         _texChanged = false;
       }
       gl.bufferSubDataTyped(WebGL.ARRAY_BUFFER, 0, new Float32List.view(verts.buffer, 0, _vOff));
-      
-      gl.drawArrays(WebGL.TRIANGLES, 0, (_vOff ~/ 8));
+      gl.drawElements(WebGL.TRIANGLES, (_vOff ~/ 8 ~/ 4 * 6), WebGL.UNSIGNED_SHORT, 0);
     }
     _vOff = 0;
   }
