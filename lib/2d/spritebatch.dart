@@ -9,10 +9,9 @@ class SpriteBatch {
   //X,Y,U,V,R,G,B,A
   Float32List verts = new Float32List(8 * BATCH_MAX_VERTS);
   WebGL.RenderingContext gl;
-  List<WebGL.Buffer> buffers = new List(1);
+  WebGL.Buffer buffer;
   WebGL.Buffer indices;
   Shader _shader;
-  int curBuffer = 0;
   
   Texture whiteTex;
   Texture _lastTex = null;
@@ -32,12 +31,7 @@ class SpriteBatch {
   
   SpriteBatch(this.gl, {int width: 1, int height: 1}) {
     _shader = getBatchShader(gl);
-    
-    for (int i = 0; i < buffers.length; i++) {
-      buffers[i] = gl.createBuffer();
-//      gl.bindBuffer(WebGL.ARRAY_BUFFER, buffers[i]);
-//      gl.bufferData(WebGL.ARRAY_BUFFER, verts.lengthInBytes, WebGL.STREAM_DRAW);
-    }
+    buffer = gl.createBuffer();
     
     //Generate indices
     var indData = new Uint16List(6 * BATCH_MAX_VERTS ~/ 4);
@@ -170,7 +164,7 @@ class SpriteBatch {
     gl.enableVertexAttribArray(1);
     gl.enableVertexAttribArray(2);
     
-    gl.bindBuffer(WebGL.ARRAY_BUFFER, buffers[curBuffer]);
+    gl.bindBuffer(WebGL.ARRAY_BUFFER, buffer);
     gl.bindBuffer(WebGL.ELEMENT_ARRAY_BUFFER, indices);
     gl.vertexAttribPointer(0, 2, WebGL.FLOAT, false, 32, 0);
     gl.vertexAttribPointer(1, 2, WebGL.FLOAT, false, 32, 8);
@@ -179,7 +173,6 @@ class SpriteBatch {
   
   void end() {
     _flush();
-    curBuffer = (curBuffer + 1) % buffers.length;
     gl.bindBuffer(WebGL.ELEMENT_ARRAY_BUFFER, null);
     gl.disableVertexAttribArray(0);
     gl.disableVertexAttribArray(1);
