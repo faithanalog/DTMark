@@ -1,5 +1,5 @@
 name: dtmark
-version: 0.2.3
+version: 0.2.4
 author: unknownloner
 description: Attempt at a game engine
 dependencies:
