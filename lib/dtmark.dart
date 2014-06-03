@@ -42,6 +42,7 @@ abstract class BaseGame {
   double _missedTicks = 0.0;
   
   double _lastTime = -1.0;
+  double _partialTick = 0.0;
   
   Int32List _keys = new Int32List(256);
   Int32List _mouseButtons = new Int32List(32);
@@ -99,6 +100,7 @@ abstract class BaseGame {
     }
     //Only render once no matter how many frames missed
     if (_missedFrames >= 1.0) {
+      _partialTick = _missedTicks;
       render();
       _missedFrames -= _missedFrames.floor();
     }
@@ -159,6 +161,7 @@ abstract class BaseGame {
   
   int get mouseX => _mouseX;
   int get mouseY => _mouseY;
+  double get partialTick => _partialTick;
   
 }
 
