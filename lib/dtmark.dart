@@ -74,11 +74,15 @@ abstract class BaseGame {
   }
   
   void launchGame() {
-    window.animationFrame.then(_renderCallback);
+//    window.animationFrame.then(_renderCallback);
+    new Timer.periodic(new Duration(milliseconds: (1 / _timePerFrame / 2).floor()), (timer) {
+      var now = new DateTime.now().millisecondsSinceEpoch;
+      _renderCallback(now.toDouble());
+    });
   }
   
   void _renderCallback(double time) {
-    window.animationFrame.then(_renderCallback);
+//    window.animationFrame.then(_renderCallback);
     if (_lastTime == -1) {
       _lastTime = time;
     }
