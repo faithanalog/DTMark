@@ -42,20 +42,23 @@ abstract class BaseGame {
   double _missedTicks = 0.0;
   
   double _lastTime = -1.0;
+  double _deltaTime = 0.0;
   double _partialTick = 0.0;
   
   Int32List _keys = new Int32List(256);
   Int32List _mouseButtons = new Int32List(32);
   int _mouseX = 0;
   int _mouseY = 0;
+  bool _useDeltaTime;
   
   bool invertMouseY = false;
   
-  BaseGame(this.canvas, {double frameRate: 60.0, double tickRate: 60.0}) {
+  BaseGame(this.canvas, {double frameRate: 60.0, double tickRate: 60.0, bool useDeltaTime: false}) {
     canvas.onContextMenu.listen((Event e) => e.preventDefault());
     gl = createContext3d();
     _timePerFrame = 1 / (1000.0 / frameRate);
     _timePerTick = 1 / (1000.0 / tickRate);
+    _useDeltaTime = useDeltaTime;
     canvas.onMouseDown.listen(onMouseDown);
     canvas.onMouseUp.listen(onMouseUp);
     canvas.onMouseMove.listen(onMouseMove);
@@ -94,9 +97,15 @@ abstract class BaseGame {
     if (_missedTicks > 10) {
       _missedTicks = 10.0;
     }
+    _deltaTime = 1.0;
     while (_missedTicks >= 1.0) {
       tick();
       _missedTicks--;
+    }
+    if (_useDeltaTime) {
+      _deltaTime = _missedTicks;
+      _missedTicks = 0.0;
+      tick();
     }
     //Only render once no matter how many frames missed
     if (_missedFrames >= 1.0) {
@@ -162,6 +171,7 @@ abstract class BaseGame {
   int get mouseX => _mouseX;
   int get mouseY => _mouseY;
   double get partialTick => _partialTick;
+  double get deltaTime => _deltaTime;
   
 }
 
