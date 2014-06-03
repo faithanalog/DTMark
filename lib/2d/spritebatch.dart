@@ -9,7 +9,7 @@ class SpriteBatch {
   //X,Y,U,V,R,G,B,A
   Float32List verts = new Float32List(8 * BATCH_MAX_VERTS);
   WebGL.RenderingContext gl;
-  List<WebGL.Buffer> buffers = new List(2);
+  List<WebGL.Buffer> buffers = new List(1);
   WebGL.Buffer indices;
   Shader _shader;
   int curBuffer = 0;
@@ -33,10 +33,10 @@ class SpriteBatch {
   SpriteBatch(this.gl, {int width: 1, int height: 1}) {
     _shader = getBatchShader(gl);
     
-    for (int i = 0; i < 2; i++) {
+    for (int i = 0; i < buffers.length; i++) {
       buffers[i] = gl.createBuffer();
-      gl.bindBuffer(WebGL.ARRAY_BUFFER, buffers[i]);
-      gl.bufferData(WebGL.ARRAY_BUFFER, verts.lengthInBytes, WebGL.STREAM_DRAW);
+//      gl.bindBuffer(WebGL.ARRAY_BUFFER, buffers[i]);
+//      gl.bufferData(WebGL.ARRAY_BUFFER, verts.lengthInBytes, WebGL.STREAM_DRAW);
     }
     
     //Generate indices
@@ -199,7 +199,7 @@ class SpriteBatch {
         }
         _texChanged = false;
       }
-      gl.bufferSubDataTyped(WebGL.ARRAY_BUFFER, 0, new Float32List.view(verts.buffer, 0, _vOff));
+      gl.bufferDataTyped(WebGL.ARRAY_BUFFER, new Float32List.view(verts.buffer, 0, _vOff), WebGL.STREAM_DRAW);
       gl.drawElements(WebGL.TRIANGLES, (_vOff ~/ 8 ~/ 4 * 6), WebGL.UNSIGNED_SHORT, 0);
     }
     _vOff = 0;
