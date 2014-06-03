@@ -49,15 +49,17 @@ abstract class BaseGame {
   Int32List _mouseButtons = new Int32List(32);
   int _mouseX = 0;
   int _mouseY = 0;
+  bool _useAnimFrame;
   bool _useDeltaTime;
   
   bool invertMouseY = false;
   
-  BaseGame(this.canvas, {double frameRate: 60.0, double tickRate: 60.0, bool useDeltaTime: false}) {
+  BaseGame(this.canvas, {double frameRate: 60.0, double tickRate: 60.0, bool useDeltaTime: false, bool useAnimFrame: true}) {
     canvas.onContextMenu.listen((Event e) => e.preventDefault());
     gl = createContext3d();
     _timePerFrame = 1 / (1000.0 / frameRate);
     _timePerTick = 1 / (1000.0 / tickRate);
+    _useAnimFrame = useAnimFrame;
     _useDeltaTime = useDeltaTime;
     canvas.onMouseDown.listen(onMouseDown);
     canvas.onMouseUp.listen(onMouseUp);
@@ -74,15 +76,31 @@ abstract class BaseGame {
   }
   
   void launchGame() {
-//    window.animationFrame.then(_renderCallback);
-    new Timer.periodic(new Duration(milliseconds: (1 / _timePerFrame / 2).floor()), (timer) {
-      var now = new DateTime.now().millisecondsSinceEpoch;
-      _renderCallback(now.toDouble());
-    });
+    if (_useAnimFrame) {
+      window.animationFrame.then(_renderCallback);
+    } else {
+      var timer = new Timer.periodic(new Duration(milliseconds: (1 / _timePerFrame / 2).floor()), (timer) {
+        var now = new DateTime.now().millisecondsSinceEpoch;
+        _renderCallback(now.toDouble());
+      });
+      window.onFocus.listen((evt) {
+        if (!timer.isActive) {
+          timer = new Timer.periodic(new Duration(milliseconds: (1 / _timePerFrame / 2).floor()), (timer) {
+            var now = new DateTime.now().millisecondsSinceEpoch;
+            _renderCallback(now.toDouble());
+          });
+        }
+      });
+      window.onBlur.listen((evt) {
+        timer.cancel();
+      });
+    }
   }
   
   void _renderCallback(double time) {
-//    window.animationFrame.then(_renderCallback);
+    if (_useAnimFrame) {
+      window.animationFrame.then(_renderCallback);
+    }
     if (_lastTime == -1) {
       _lastTime = time;
     }
