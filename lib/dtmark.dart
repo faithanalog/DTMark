@@ -52,7 +52,17 @@ abstract class BaseGame {
   double _lastTime = -1.0;
   double _deltaTime = 0.0;
   double _partialTick = 0.0;
+  
+  /**
+   * canvasResolution / windowResolution
+   * So if the clientWidth is 100 and the canvas.width is 200, canvasScale would be 2.0
+   */
   double canvasScale = 1.0;
+  
+  /**
+   * All mouse coordinates are multiplied by this.
+   */
+  double mousePosScale = 1.0;
   
   Int32List _keys = new Int32List(256);
   Int32List _mouseButtons = new Int32List(32);
@@ -81,13 +91,13 @@ abstract class BaseGame {
     
     if (!touchSupport) {
       canvas.onMouseDown.listen((evt) {
-        onMouseDown((evt.offset.x * canvasScale).toInt(), (evt.offset.y * canvasScale).toInt(), evt.button);
+        onMouseDown((evt.offset.x * canvasScale * mousePosScale).toInt(), (evt.offset.y * canvasScale * mousePosScale).toInt(), evt.button);
       });
       canvas.onMouseUp.listen((evt) {
-        onMouseUp((evt.offset.x * canvasScale).toInt(), (evt.offset.y * canvasScale).toInt(), evt.button);
+        onMouseUp((evt.offset.x * canvasScale * mousePosScale).toInt(), (evt.offset.y * canvasScale * mousePosScale).toInt(), evt.button);
       });
       canvas.onMouseMove.listen((evt) {
-        onMouseMove((evt.offset.x * canvasScale).toInt(), (evt.offset.y * canvasScale).toInt());
+        onMouseMove((evt.offset.x * canvasScale * mousePosScale).toInt(), (evt.offset.y * canvasScale * mousePosScale).toInt());
       });
       canvas.onKeyDown.listen((evt) {
         onKeyDown(evt.keyCode);
@@ -101,21 +111,21 @@ abstract class BaseGame {
         JsObject ev = new JsObject.fromBrowserObject(evt);
         JsObject touch = new JsObject.fromBrowserObject(ev["changedTouches"][0]);
         Point offset = new Point(touch["clientX"], touch["clientY"]) - canvas.client.topLeft;
-        onMouseDown((offset.x * canvasScale).toInt(), (offset.y * canvasScale).toInt(), 0);
+        onMouseDown((offset.x * canvasScale * mousePosScale).toInt(), (offset.y * canvasScale * mousePosScale).toInt(), 0);
         evt.preventDefault();
       });
       canvas.onTouchEnd.listen((evt) {
         JsObject ev = new JsObject.fromBrowserObject(evt);
         JsObject touch = new JsObject.fromBrowserObject(ev["changedTouches"][0]);
         Point offset = new Point(touch["clientX"], touch["clientY"]) - canvas.client.topLeft;
-        onMouseUp((offset.x * canvasScale).toInt(), (offset.y * canvasScale).toInt(), 0);
+        onMouseUp((offset.x * canvasScale * mousePosScale).toInt(), (offset.y * canvasScale * mousePosScale).toInt(), 0);
         evt.preventDefault();
       });
       canvas.onTouchMove.listen((evt) {
         JsObject ev = new JsObject.fromBrowserObject(evt);
         JsObject touch = new JsObject.fromBrowserObject(ev["changedTouches"][0]);
         Point offset = new Point(touch["clientX"], touch["clientY"]) - canvas.client.topLeft;
-        onMouseMove((offset.x * canvasScale).toInt(), (offset.y * canvasScale).toInt());
+        onMouseMove((offset.x * canvasScale * mousePosScale).toInt(), (offset.y * canvasScale * mousePosScale).toInt());
         evt.preventDefault();
       });
     }
@@ -204,7 +214,7 @@ abstract class BaseGame {
     _mouseX = x;
     _mouseY = y;
     if (invertMouseY) {
-      _mouseY = canvas.height - _mouseY;
+      _mouseY = (canvas.height * mousePosScale).toInt() - _mouseY;
     }
     _mouseButtons[btn] = 1;
   }
@@ -213,7 +223,7 @@ abstract class BaseGame {
     _mouseX = x;
     _mouseY = y;
     if (invertMouseY) {
-      _mouseY = canvas.height - _mouseY;
+      _mouseY = (canvas.height * mousePosScale).toInt() - _mouseY;
     }
     _mouseButtons[btn] = 0;
   }
@@ -222,7 +232,7 @@ abstract class BaseGame {
     _mouseX = x;
     _mouseY = y;
     if (invertMouseY) {
-      _mouseY = canvas.height - _mouseY;
+      _mouseY = (canvas.height * mousePosScale).toInt() - _mouseY;
     }
   }
   
