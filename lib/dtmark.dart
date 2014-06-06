@@ -7,6 +7,7 @@ import 'dart:typed_data';
 import 'dart:web_gl' as WebGL;
 import 'dart:web_audio' as WebAudio;
 import 'dart:async';
+import 'dart:js';
 import 'package:vector_math/vector_math.dart';
 import 'package:browser_detect/browser_detect.dart' as BrowserDetect;
 
@@ -31,7 +32,14 @@ part 'camera.dart';
 part 'audio/streaming.dart';
 part 'audio/webaudio.dart';
 
+//UI
+part 'ui/component.dart';
+part 'ui/event.dart';
+part 'ui/button.dart';
+
 abstract class BaseGame {
+  
+  static bool touchSupport = null;
   
   CanvasElement canvas;
   WebGL.RenderingContext gl;
@@ -44,6 +52,7 @@ abstract class BaseGame {
   double _lastTime = -1.0;
   double _deltaTime = 0.0;
   double _partialTick = 0.0;
+  double canvasScale = 1.0;
   
   Int32List _keys = new Int32List(256);
   Int32List _mouseButtons = new Int32List(32);
@@ -61,11 +70,51 @@ abstract class BaseGame {
     _timePerTick = 1 / (1000.0 / tickRate);
     _useAnimFrame = useAnimFrame;
     _useDeltaTime = useDeltaTime;
-    canvas.onMouseDown.listen(onMouseDown);
-    canvas.onMouseUp.listen(onMouseUp);
-    canvas.onMouseMove.listen(onMouseMove);
-    canvas.onKeyDown.listen(onKeyDown);
-    canvas.onKeyUp.listen(onKeyUp);
+    
+    if (touchSupport == null) {
+      touchSupport = new JsObject.fromBrowserObject(window).hasProperty("ontouchstart");
+    }
+    
+    if (!touchSupport) {
+      canvas.onMouseDown.listen((evt) {
+        onMouseDown((evt.offset.x * canvasScale).toInt(), (evt.offset.y * canvasScale).toInt(), evt.button);
+      });
+      canvas.onMouseUp.listen((evt) {
+        onMouseUp((evt.offset.x * canvasScale).toInt(), (evt.offset.y * canvasScale).toInt(), evt.button);
+      });
+      canvas.onMouseMove.listen((evt) {
+        onMouseMove((evt.offset.x * canvasScale).toInt(), (evt.offset.y * canvasScale).toInt());
+      });
+      canvas.onKeyDown.listen((evt) {
+        onKeyDown(evt.keyCode);
+      });
+      canvas.onKeyUp.listen((evt) {
+        onKeyUp(evt.keyCode);
+      });
+    } else {
+      //Done through JS stuff to support cocoonjs
+      canvas.onTouchStart.listen((evt) {
+        JsObject ev = new JsObject.fromBrowserObject(evt);
+        JsObject touch = new JsObject.fromBrowserObject(ev["changedTouches"][0]);
+        Point offset = new Point(touch["clientX"], touch["clientY"]) - canvas.client.topLeft;
+        onMouseDown((offset.x * canvasScale).toInt(), (offset.y * canvasScale).toInt(), 0);
+        evt.preventDefault();
+      });
+      canvas.onTouchEnd.listen((evt) {
+        JsObject ev = new JsObject.fromBrowserObject(evt);
+        JsObject touch = new JsObject.fromBrowserObject(ev["changedTouches"][0]);
+        Point offset = new Point(touch["clientX"], touch["clientY"]) - canvas.client.topLeft;
+        onMouseUp((offset.x * canvasScale).toInt(), (offset.y * canvasScale).toInt(), 0);
+        evt.preventDefault();
+      });
+      canvas.onTouchMove.listen((evt) {
+        JsObject ev = new JsObject.fromBrowserObject(evt);
+        JsObject touch = new JsObject.fromBrowserObject(ev["changedTouches"][0]);
+        Point offset = new Point(touch["clientX"], touch["clientY"]) - canvas.client.topLeft;
+        onMouseMove((offset.x * canvasScale).toInt(), (offset.y * canvasScale).toInt());
+        evt.preventDefault();
+      });
+    }
   }
   
   /**
@@ -146,38 +195,35 @@ abstract class BaseGame {
     
   }
   
-  void onKeyDown(KeyboardEvent evt) {
-    _keys[evt.keyCode] = 1;
+  void onKeyDown(int key) {
+    _keys[key] = 1;
   }
   
-  void onKeyUp(KeyboardEvent evt) {
-    _keys[evt.keyCode] = 0;
+  void onKeyUp(int key) {
+    _keys[key] = 0;
   }
   
-  void onMouseDown(MouseEvent evt) {
-    Point off = evt.offset;
-    _mouseX = off.x;
-    _mouseY = off.y;
+  void onMouseDown(int x, int y, int btn) {
+    _mouseX = x;
+    _mouseY = y;
     if (invertMouseY) {
       _mouseY = canvas.height - _mouseY;
     }
-    _mouseButtons[evt.button] = 1;
+    _mouseButtons[btn] = 1;
   }
   
-  void onMouseUp(MouseEvent evt) {
-    Point off = evt.offset;
-    _mouseX = off.x;
-    _mouseY = off.y;
+  void onMouseUp(int x, int y, int btn) {
+    _mouseX = x;
+    _mouseY = y;
     if (invertMouseY) {
       _mouseY = canvas.height - _mouseY;
     }
-    _mouseButtons[evt.button] = 0;
+    _mouseButtons[btn] = 0;
   }
   
-  void onMouseMove(MouseEvent evt) {
-    Point off = evt.offset;
-    _mouseX = off.x;
-    _mouseY = off.y;
+  void onMouseMove(int x, int y) {
+    _mouseX = x;
+    _mouseY = y;
     if (invertMouseY) {
       _mouseY = canvas.height - _mouseY;
     }

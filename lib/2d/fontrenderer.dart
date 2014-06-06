@@ -39,6 +39,7 @@ class FontRenderer {
    * Creates a 6 wide by 8 tall monospace font from an embedded image
    */
   FontRenderer.lowResMono(WebGL.RenderingContext gl) {
+    size = 8;
     double cwidth = 5.0;
     double cheight = 7.0;
     
