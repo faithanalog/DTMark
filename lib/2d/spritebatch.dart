@@ -201,7 +201,16 @@ class SpriteBatch {
   static Shader _batchShader;
   static Shader getBatchShader(WebGL.RenderingContext gl) {
     if (_batchShader == null) {
-      _batchShader = new Shader(
+      _batchShader = new Shader(VERT_SHADER, FRAG_SHADER, gl);
+      _batchShader.bindAttribLocation(0, "a_position");
+      _batchShader.bindAttribLocation(1, "a_texCoord");
+      _batchShader.bindAttribLocation(2, "a_color");
+      _batchShader.link();
+    }
+    return _batchShader;
+  }
+  
+  static const String VERT_SHADER =
 """
 uniform mat4 u_transform;
 
@@ -217,8 +226,8 @@ void main() {
   v_color = a_color;
   gl_Position = u_transform * vec4(a_position, 0.0, 1.0);
 }
-"""
-, 
+""";
+  static const String FRAG_SHADER =
 """
 precision mediump float;
 uniform sampler2D u_texture;
@@ -233,12 +242,5 @@ void main() {
   }
   gl_FragColor = color; 
 }
-""", gl);
-      _batchShader.bindAttribLocation(0, "a_position");
-      _batchShader.bindAttribLocation(1, "a_texCoord");
-      _batchShader.bindAttribLocation(2, "a_color");
-      _batchShader.link();
-    }
-    return _batchShader;
-  }
+""";
 }

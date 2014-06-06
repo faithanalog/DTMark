@@ -71,6 +71,10 @@ abstract class BaseGame {
   bool _useAnimFrame;
   bool _useDeltaTime;
   
+  /**
+   * Whether or not to invert Y values from what they are provided as in the event.
+   * This applies to what mouseY is set to.
+   */
   bool invertMouseY = false;
   
   /**
