@@ -159,6 +159,7 @@ class SpriteBatch {
     _transform.setFrom(_projection);
     _transform.multiply(_modelView);
     _shader.setUniformMatrix4fv("u_transform", false, _transform);
+    _shader.setUniform1i("u_texture", 0);
     
     gl.enableVertexAttribArray(0);
     gl.enableVertexAttribArray(1);
