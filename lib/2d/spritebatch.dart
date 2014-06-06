@@ -68,7 +68,10 @@ class SpriteBatch {
     verts[_vOff + 1] = y;
     verts[_vOff + 2] = u;
     verts[_vOff + 3] = v;
-    verts.setAll(_vOff + 4, color.storage);
+    verts[_vOff + 4] = color.r;
+    verts[_vOff + 5] = color.g;
+    verts[_vOff + 6] = color.b;
+    verts[_vOff + 7] = color.a;
     _vOff += 8;
   }
   
