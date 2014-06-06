@@ -33,12 +33,13 @@ class Texture {
     int wrapS: WebGL.CLAMP_TO_EDGE, int wrapT: WebGL.CLAMP_TO_EDGE, bool mipmap: false}) {
     Texture tex = new Texture(null, gl, minFilter: minFilter, magFilter: magFilter, wrapS: wrapS, wrapT: wrapT, mipmap: mipmap);
     
-    var img = new ImageElement(src: url);
+    var img = new ImageElement();
     img.onLoad.first.then((Event) {
       tex.bind();
       tex.uploadData(img);
       tex._loadCompleter.complete(tex);
     });
+    img.src = url;
     return tex;
   }
   

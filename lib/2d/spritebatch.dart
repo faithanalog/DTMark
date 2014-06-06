@@ -17,6 +17,7 @@ class SpriteBatch {
   Texture _lastTex = null;
   Vector4 color = new Vector4(1.0, 1.0, 1.0, 1.0);
   int _vOff = 0;
+  int _vOffMax = 8 * BATCH_MAX_VERTS;
   
   
   //Max vertices we've actually used, we'll use this for buffer streaming so we dont use tons of vram
@@ -60,7 +61,7 @@ class SpriteBatch {
   }
   
   void _addVert(double x, double y, double u, double v) {
-    if (_vOff >= verts.length) {
+    if (_vOff >= _vOffMax) {
       _flush();
     }
     verts[_vOff + 0] = x;
