@@ -3,13 +3,15 @@ part of dtmark;
 //TODO Add Z index (make it a vert attrib) so that things don't have to be painter's algorithim. good idea? maybe...
 class SpriteBatch {
   
+  static int BUFFER_COUNT = 3;
+  
   //Max 65536 verts before flush
   static int BATCH_MAX_VERTS = 65536;
   
   //X,Y,U,V,R,G,B,A
   Float32List verts = new Float32List(8 * BATCH_MAX_VERTS);
   WebGL.RenderingContext gl;
-  WebGL.Buffer buffer;
+  List<WebGL.Buffer> buffers = new List(BUFFER_COUNT);
   WebGL.Buffer indices;
   Shader _shader;
   
@@ -18,6 +20,7 @@ class SpriteBatch {
   Vector4 color = new Vector4(1.0, 1.0, 1.0, 1.0);
   int _vOff = 0;
   int _vOffMax = 8 * BATCH_MAX_VERTS;
+  int _curBuffer = 0;
   
   
   //Max vertices we've actually used, we'll use this for buffer streaming so we dont use tons of vram
@@ -32,7 +35,10 @@ class SpriteBatch {
   
   SpriteBatch(this.gl, {int width: 1, int height: 1}) {
     _shader = getBatchShader(gl);
-    buffer = gl.createBuffer();
+    
+    for (int i = 0; i < BUFFER_COUNT; i++) {
+      buffers[i] = gl.createBuffer();
+    }
     
     //Generate indices
     var indData = new Uint16List(6 * BATCH_MAX_VERTS ~/ 4);
@@ -169,7 +175,7 @@ class SpriteBatch {
     gl.enableVertexAttribArray(1);
     gl.enableVertexAttribArray(2);
     
-    gl.bindBuffer(WebGL.ARRAY_BUFFER, buffer);
+    gl.bindBuffer(WebGL.ARRAY_BUFFER, buffers[_curBuffer]);
     gl.bindBuffer(WebGL.ELEMENT_ARRAY_BUFFER, indices);
     gl.vertexAttribPointer(0, 2, WebGL.FLOAT, false, 32, 0);
     gl.vertexAttribPointer(1, 2, WebGL.FLOAT, false, 32, 8);
@@ -183,6 +189,7 @@ class SpriteBatch {
     gl.disableVertexAttribArray(1);
     gl.disableVertexAttribArray(2);
     _rendering = false;
+    _curBuffer = (_curBuffer + 1) % buffers.length;
   }
   
   void flush() {
