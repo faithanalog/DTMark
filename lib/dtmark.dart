@@ -152,6 +152,7 @@ abstract class BaseGame {
       });
       window.onFocus.listen((evt) {
         if (!timer.isActive) {
+          timer.cancel();
           timer = new Timer.periodic(new Duration(milliseconds: (1 / _timePerFrame).floor()), (timer) {
             var now = new DateTime.now().millisecondsSinceEpoch;
             _renderCallback(now.toDouble());
