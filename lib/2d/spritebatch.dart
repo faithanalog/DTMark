@@ -4,6 +4,7 @@ part of dtmark;
 class SpriteBatch {
   
   static int BUFFER_COUNT = 3;
+  static bool USE_SUBDATA = false;
   
   //Max 65536 verts before flush
   static int BATCH_MAX_VERTS = 65536;
@@ -38,6 +39,8 @@ class SpriteBatch {
     
     for (int i = 0; i < BUFFER_COUNT; i++) {
       buffers[i] = gl.createBuffer();
+      gl.bindBuffer(WebGL.ARRAY_BUFFER, buffers[i]);
+      gl.bufferData(WebGL.ARRAY_BUFFER, verts.lengthInBytes, WebGL.DYNAMIC_DRAW);
     }
     
     //Generate indices
@@ -204,7 +207,8 @@ class SpriteBatch {
         }
         _texChanged = false;
       }
-      gl.bufferDataTyped(WebGL.ARRAY_BUFFER, new Float32List.view(verts.buffer, 0, _vOff), WebGL.STREAM_DRAW);
+//      gl.bufferDataTyped(WebGL.ARRAY_BUFFER, new Float32List.view(verts.buffer, 0, _vOff), WebGL.DYNAMIC_DRAW);
+      gl.bufferSubDataTyped(WebGL.ARRAY_BUFFER, 0, new Float32List.view(verts.buffer, 0, _vOff));
       gl.drawElements(WebGL.TRIANGLES, (_vOff ~/ 8 ~/ 4 * 6), WebGL.UNSIGNED_SHORT, 0);
     }
     _vOff = 0;
