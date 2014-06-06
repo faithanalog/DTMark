@@ -171,16 +171,16 @@ abstract class BaseGame {
       _missedTicks = 10.0;
     }
     _deltaTime = 1.0;
+    while (_missedTicks >= 1.0) {
+      tick();
+      _missedTicks--;
+    }
     if (_useDeltaTime) {
       _deltaTime = _missedTicks;
       _missedTicks = 0.0;
       tick();
-    } else {
-      while (_missedTicks >= 1.0) {
-        tick();
-        _missedTicks--;
-      }
     }
+    _partialTick = _missedTicks;
     render();
   }
   
