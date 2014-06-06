@@ -63,6 +63,10 @@ abstract class BaseGame {
   
   bool invertMouseY = false;
   
+  /**
+   * Base game constructor. [frameRate] is only used when useAnimFrame is false,
+   * otherwise render() will be called on every anim frame.
+   */
   BaseGame(this.canvas, {double frameRate: 60.0, double tickRate: 60.0, bool useDeltaTime: false, bool useAnimFrame: true}) {
     canvas.onContextMenu.listen((Event e) => e.preventDefault());
     gl = createContext3d();
@@ -128,13 +132,13 @@ abstract class BaseGame {
     if (_useAnimFrame) {
       window.animationFrame.then(_renderCallback);
     } else {
-      var timer = new Timer.periodic(new Duration(milliseconds: (1 / _timePerFrame / 2).floor()), (timer) {
+      var timer = new Timer.periodic(new Duration(milliseconds: (1 / _timePerFrame).floor()), (timer) {
         var now = new DateTime.now().millisecondsSinceEpoch;
         _renderCallback(now.toDouble());
       });
       window.onFocus.listen((evt) {
         if (!timer.isActive) {
-          timer = new Timer.periodic(new Duration(milliseconds: (1 / _timePerFrame / 2).floor()), (timer) {
+          timer = new Timer.periodic(new Duration(milliseconds: (1 / _timePerFrame).floor()), (timer) {
             var now = new DateTime.now().millisecondsSinceEpoch;
             _renderCallback(now.toDouble());
           });
@@ -157,10 +161,8 @@ abstract class BaseGame {
     //Missed more than a second just do 1 calc
     if (dif > 1000.0) {
       _missedTicks++;
-      _missedFrames++;
     } else {
       _missedTicks += dif * _timePerTick;
-      _missedFrames += dif * _timePerFrame;
     }
     _lastTime = time;
     
@@ -179,12 +181,7 @@ abstract class BaseGame {
         _missedTicks--;
       }
     }
-    //Only render once no matter how many frames missed
-    if (_missedFrames >= 1.0) {
-      _partialTick = _missedTicks;
-      render();
-      _missedFrames -= _missedFrames.floor();
-    }
+    render();
   }
   
   void render() {
