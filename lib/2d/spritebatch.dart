@@ -108,6 +108,16 @@ class SpriteBatch {
     _addQuad(x, y + height, 0.0, 0.0, x + width, y, tex.maxU, tex.maxV);
   }
   
+  void drawRegion(TextureRegion tex, double x, double y, [double width, double height]) {
+    if (width == null) {
+      width = tex.width.toDouble();
+    }
+    if (height == null) {
+      height = tex.height.toDouble();
+    }
+    drawTexRegion(tex.texture, x, y, width, height, tex.x, tex.y, tex.width, tex.height);
+  }
+  
   void drawTexScaled(Texture tex, double x, double y, double scale) {
     drawTexture(tex, x, y, tex.width * scale, tex.height * scale);
   }

@@ -112,3 +112,20 @@ class Texture {
   }
   
 }
+
+class TextureRegion {
+  
+  final Texture texture;
+  final int x, y, width, height;
+  
+  /**
+   * Defines a texture region of a given texture. [x] and [y]
+   * are the coordinates of the top left point of the region,
+   * and width
+   */
+  TextureRegion(this.texture, this.x, this.y, this.width, this.height);
+  
+  int get maxX => x + width;
+  int get maxY => y + height;
+
+}
