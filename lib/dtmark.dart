@@ -219,7 +219,7 @@ abstract class BaseGame {
     _mouseX = x;
     _mouseY = y;
     if (invertMouseY) {
-      _mouseY = (canvas.height * mousePosScale).toInt() - _mouseY;
+      _mouseY = (canvas.height * mousePosScale).toInt() - _mouseY - 1;
     }
     _mouseButtons[btn] = 1;
   }
@@ -228,7 +228,7 @@ abstract class BaseGame {
     _mouseX = x;
     _mouseY = y;
     if (invertMouseY) {
-      _mouseY = (canvas.height * mousePosScale).toInt() - _mouseY;
+      _mouseY = (canvas.height * mousePosScale).toInt() - _mouseY - 1;
     }
     _mouseButtons[btn] = 0;
   }
@@ -237,7 +237,7 @@ abstract class BaseGame {
     _mouseX = x;
     _mouseY = y;
     if (invertMouseY) {
-      _mouseY = (canvas.height * mousePosScale).toInt() - _mouseY;
+      _mouseY = (canvas.height * mousePosScale).toInt() - _mouseY - 1;
     }
   }
   

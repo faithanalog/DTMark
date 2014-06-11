@@ -217,7 +217,7 @@ class RootPanel extends Container {
     if (!BaseGame.touchSupport) {
       canvas.onMouseDown.listen((evt) {
         Point offset = evt.offset;
-        int x = offset.x * game.canvasScale ~/ scale, y = (canvas.height - offset.y * game.canvasScale) ~/ scale;
+        int x = offset.x * game.canvasScale ~/ scale, y = (canvas.height - offset.y * game.canvasScale - 1) ~/ scale;
         _mouseX = x;
         _mouseY = y;
         if (active) {
@@ -226,7 +226,7 @@ class RootPanel extends Container {
       });
       canvas.onMouseUp.listen((evt) {
         Point offset = evt.offset;
-        int x = offset.x * game.canvasScale ~/ scale, y = (canvas.height - offset.y * game.canvasScale) ~/ scale;
+        int x = offset.x * game.canvasScale ~/ scale, y = (canvas.height - offset.y * game.canvasScale - 1) ~/ scale;
         _mouseX = x;
         _mouseY = y;
         if (active) {
@@ -235,7 +235,7 @@ class RootPanel extends Container {
       });
       canvas.onMouseMove.listen((evt) {
         Point offset = evt.offset;
-        int x = offset.x * game.canvasScale ~/ scale, y = (canvas.height - offset.y * game.canvasScale) ~/ scale;
+        int x = offset.x * game.canvasScale ~/ scale, y = (canvas.height - offset.y * game.canvasScale - 1) ~/ scale;
         _mouseX = x;
         _mouseY = y;
         if (active) {
@@ -247,7 +247,7 @@ class RootPanel extends Container {
         JsObject ev = new JsObject.fromBrowserObject(evt);
         JsObject touch = new JsObject.fromBrowserObject(ev["changedTouches"][0]);
         Point offset = new Point(touch["clientX"], touch["clientY"]) - canvas.client.topLeft;
-        int x = offset.x * game.canvasScale ~/ scale, y = (canvas.height - offset.y * game.canvasScale) ~/ scale;
+        int x = offset.x * game.canvasScale ~/ scale, y = (canvas.height - offset.y * game.canvasScale - 1) ~/ scale;
         _mouseX = x;
         _mouseY = y;
         if (active) {
@@ -258,7 +258,7 @@ class RootPanel extends Container {
         JsObject ev = new JsObject.fromBrowserObject(evt);
         JsObject touch = new JsObject.fromBrowserObject(ev["changedTouches"][0]);
         Point offset = new Point(touch["clientX"], touch["clientY"]) - canvas.client.topLeft;
-        int x = offset.x * game.canvasScale ~/ scale, y = (canvas.height - offset.y * game.canvasScale) ~/ scale;
+        int x = offset.x * game.canvasScale ~/ scale, y = (canvas.height - offset.y * game.canvasScale - 1) ~/ scale;
         if (active) {
           _mouseX = x;
           _mouseY = y;
@@ -274,7 +274,7 @@ class RootPanel extends Container {
         JsObject ev = new JsObject.fromBrowserObject(evt);
         JsObject touch = new JsObject.fromBrowserObject(ev["changedTouches"][0]);
         Point offset = new Point(touch["clientX"], touch["clientY"]) - canvas.client.topLeft;
-        int x = offset.x * game.canvasScale ~/ scale, y = (canvas.height - offset.y * game.canvasScale) ~/ scale;
+        int x = offset.x * game.canvasScale ~/ scale, y = (canvas.height - offset.y * game.canvasScale - 1) ~/ scale;
         _mouseX = x;
         _mouseY = y;
         if (active) {
