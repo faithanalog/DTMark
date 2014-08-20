@@ -38,45 +38,45 @@ part 'ui/event.dart';
 part 'ui/button.dart';
 
 abstract class BaseGame {
-  
+
   static bool touchSupport = null;
-  
+
   CanvasElement canvas;
   WebGL.RenderingContext gl;
-  
+
   double _timePerFrame;
   double _timePerTick;
   double _missedFrames = 0.0;
   double _missedTicks = 0.0;
-  
+
   double _lastTime = -1.0;
   double _deltaTime = 0.0;
   double _partialTick = 0.0;
-  
+
   /**
    * canvasResolution / windowResolution
    * So if the clientWidth is 100 and the canvas.width is 200, canvasScale would be 2.0
    */
   double canvasScale = 1.0;
-  
+
   /**
    * All mouse coordinates are multiplied by this.
    */
   double mousePosScale = 1.0;
-  
+
   Int32List _keys = new Int32List(256);
   Int32List _mouseButtons = new Int32List(32);
   int _mouseX = 0;
   int _mouseY = 0;
   bool _useAnimFrame;
   bool _useDeltaTime;
-  
+
   /**
    * Whether or not to invert Y values from what they are provided as in the event.
    * This applies to what mouseY is set to.
    */
   bool invertMouseY = false;
-  
+
   /**
    * Base game constructor. [frameRate] is only used when useAnimFrame is false,
    * otherwise render() will be called on every anim frame.
@@ -88,11 +88,11 @@ abstract class BaseGame {
     _timePerTick = 1 / (1000.0 / tickRate);
     _useAnimFrame = useAnimFrame;
     _useDeltaTime = useDeltaTime;
-    
+
     if (touchSupport == null) {
       touchSupport = new JsObject.fromBrowserObject(window).hasProperty("ontouchstart");
     }
-    
+
     if (!touchSupport) {
       canvas.onMouseDown.listen((evt) {
         onMouseDown((evt.offset.x * canvasScale * mousePosScale).toInt(), (evt.offset.y * canvasScale * mousePosScale).toInt(), evt.button);
@@ -134,14 +134,14 @@ abstract class BaseGame {
       });
     }
   }
-  
+
   /**
    * Creates the WebGL context. Override this to customize attributes of the context
    */
   WebGL.RenderingContext createContext3d() {
     return canvas.getContext3d();
   }
-  
+
   void launchGame() {
     if (_useAnimFrame) {
       window.animationFrame.then(_renderCallback);
@@ -164,7 +164,7 @@ abstract class BaseGame {
       });
     }
   }
-  
+
   void _renderCallback(double time) {
     if (_useAnimFrame) {
       window.animationFrame.then(_renderCallback);
@@ -180,7 +180,7 @@ abstract class BaseGame {
       _missedTicks += dif * _timePerTick;
     }
     _lastTime = time;
-    
+
     //Don't tolerate more than 10 ticks missed
     if (_missedTicks > 10) {
       _missedTicks = 10.0;
@@ -198,23 +198,23 @@ abstract class BaseGame {
     _partialTick = _missedTicks;
     render();
   }
-  
+
   void render() {
-    
+
   }
-  
+
   void tick() {
-    
+
   }
-  
+
   void onKeyDown(int key) {
     _keys[key] = 1;
   }
-  
+
   void onKeyUp(int key) {
     _keys[key] = 0;
   }
-  
+
   void onMouseDown(int x, int y, int btn) {
     _mouseX = x;
     _mouseY = y;
@@ -223,7 +223,7 @@ abstract class BaseGame {
     }
     _mouseButtons[btn] = 1;
   }
-  
+
   void onMouseUp(int x, int y, int btn) {
     _mouseX = x;
     _mouseY = y;
@@ -232,7 +232,7 @@ abstract class BaseGame {
     }
     _mouseButtons[btn] = 0;
   }
-  
+
   void onMouseMove(int x, int y) {
     _mouseX = x;
     _mouseY = y;
@@ -240,20 +240,20 @@ abstract class BaseGame {
       _mouseY = (canvas.height * mousePosScale).toInt() - _mouseY - 1;
     }
   }
-  
+
   bool isKeyDown(int key) {
     return _keys[key & 0xFF] != 0;
   }
-  
+
   bool isMouseDown(int btn) {
     return _mouseButtons[btn & 0x1F] != 0;
   }
-  
+
   int get mouseX => _mouseX;
   int get mouseY => _mouseY;
   double get partialTick => _partialTick;
   double get deltaTime => _deltaTime;
-  
+
 }
 
 int nextPowerOf2(int val) {
