@@ -11,12 +11,6 @@ import 'dart:js';
 import 'package:vector_math/vector_math.dart';
 import 'package:browser_detect/browser_detect.dart' as BrowserDetect;
 
-//part 'math/vec2.dart';
-//part 'math/vec3.dart';
-//part 'math/vec4.dart';
-//
-//part 'math/mat4.dart';
-
 //WebGL stuff
 part 'gl/shader.dart';
 part 'gl/texture.dart';
@@ -24,9 +18,6 @@ part 'gl/texture.dart';
 //2D stuff
 part '2d/spritebatch.dart';
 part '2d/fontrenderer.dart';
-
-//Camera
-part 'camera.dart';
 
 //Audio
 part 'audio/streaming.dart';

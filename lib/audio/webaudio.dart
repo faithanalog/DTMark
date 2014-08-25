@@ -1,12 +1,12 @@
 part of dtmark;
 
 class AudioEngine {
-  
+
   WebAudio.AudioContext ctx;
   WebAudio.AudioNode dest;
-  
+
   WebAudio.GainNode _gain;
-  
+
   AudioEngine() {
     ctx = new WebAudio.AudioContext();
     _gain = ctx.createGain();
@@ -14,45 +14,45 @@ class AudioEngine {
     dest.connectNode(ctx.destination);
     volume = 1.0;
   }
-  
+
   set volume(double vol) => _gain.gain.value = vol;
-  
+
   double get volume => _gain.gain.value;
-  
+
 }
 
 abstract class PlayableAudio {
   AudioEngine engine;
-  
+
   PlayableAudio(this.engine);
-  
+
   WebAudio.AudioSourceNode createSource();
-  
-  Future<PlayableAudio> onLoad();
-  
+
+  Future<PlayableAudio> get onLoad => new Future.value(this);
+
   WebAudio.AudioSourceNode play();
-  
+
   WebAudio.AudioSourceNode playLooping();
 }
 
 class AudioStream extends PlayableAudio {
-  
+
   AudioElement elem;
   Completer<PlayableAudio> _loadCompleter = new Completer();
-  
+
   AudioStream(String path, AudioEngine engine, [bool wav = false]): super(engine) {
     elem = AudioStreaming.loadAudio(path, wav: wav);
     elem.onLoadStart.first.then((evt) {
       _loadCompleter.complete(this);
     });
   }
-  
+
   @override
   WebAudio.MediaElementAudioSourceNode createSource() {
     var src = engine.ctx.createMediaElementSource(elem);
     return src;
   }
-  
+
   @override
   WebAudio.MediaElementAudioSourceNode play() {
     var src = createSource();
@@ -64,7 +64,7 @@ class AudioStream extends PlayableAudio {
     elem.play();
     return src;
   }
-  
+
   @override
   WebAudio.MediaElementAudioSourceNode playLooping() {
     var src = createSource();
@@ -76,19 +76,27 @@ class AudioStream extends PlayableAudio {
     elem.play();
     return src;
   }
-  
-  
+
+
   @override
-  Future<PlayableAudio> onLoad() {
-    return _loadCompleter.future;
-  }
+  Future<PlayableAudio> get onLoad => _loadCompleter.future;
 }
 
 class Sound extends PlayableAudio {
-  
+
   WebAudio.AudioBuffer buffer;
   Completer<PlayableAudio> _loadCompleter = new Completer();
-    
+
+  /**
+   * Loads the [audioData] for playback
+   */
+  Sound(ByteBuffer audioData, AudioEngine engine): super(engine) {
+    engine.ctx.decodeAudioData(audioData).then((buffer) {
+      this.buffer = buffer;
+      _loadCompleter.complete(this);
+    });
+  }
+
   /**
    * Loads the audio file from [path], where path is the path
    * to the audio file without a file extension. Automatically
@@ -119,14 +127,14 @@ class Sound extends PlayableAudio {
     });
     req.send();
   }
-  
+
   @override
   WebAudio.AudioBufferSourceNode createSource() {
     var src = engine.ctx.createBufferSource();
     src.buffer = buffer;
     return src;
   }
-  
+
   @override
   WebAudio.AudioBufferSourceNode play() {
     var src = createSource();
@@ -134,7 +142,7 @@ class Sound extends PlayableAudio {
     src.start(0);
     return src;
   }
-  
+
   @override
   WebAudio.AudioBufferSourceNode playLooping() {
     var src = createSource();
@@ -143,11 +151,9 @@ class Sound extends PlayableAudio {
     src.start(0);
     return src;
   }
-  
-  
+
+
   @override
-  Future<PlayableAudio> onLoad() {
-    return _loadCompleter.future;
-  }
-  
+  Future<PlayableAudio> get onLoad => _loadCompleter.future;
+
 }

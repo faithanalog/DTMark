@@ -14,7 +14,7 @@ class Texture {
 
   bool needsUpdate = false;
 
-  Completer _loadCompleter = new Completer();
+  Future<Texture> _onLoad;
 
   Texture(CanvasImageSource data, this.gl, {int minFilter: WebGL.NEAREST, int magFilter: WebGL.NEAREST,
     int wrapS: WebGL.CLAMP_TO_EDGE, int wrapT: WebGL.CLAMP_TO_EDGE, bool mipmap: false}) {
@@ -27,17 +27,20 @@ class Texture {
     gl.bindTexture(WebGL.TEXTURE_2D, glTex);
     uploadData(data);
     _setProperties();
+    _onLoad = new Future.value(this);
   }
 
   factory Texture.load(String url, WebGL.RenderingContext gl, {int minFilter: WebGL.NEAREST, int magFilter: WebGL.NEAREST,
     int wrapS: WebGL.CLAMP_TO_EDGE, int wrapT: WebGL.CLAMP_TO_EDGE, bool mipmap: false}) {
     Texture tex = new Texture(null, gl, minFilter: minFilter, magFilter: magFilter, wrapS: wrapS, wrapT: wrapT, mipmap: mipmap);
+    Completer<Texture> loadCompleter = new Completer();
+    tex._onLoad = loadCompleter.future;
 
     var img = new ImageElement();
     img.onLoad.first.then((Event) {
       tex.bind();
       tex.uploadData(img);
-      tex._loadCompleter.complete(tex);
+      loadCompleter.complete(tex);
     });
     img.src = url;
     return tex;
@@ -107,9 +110,7 @@ class Texture {
     }
   }
 
-  Future<Texture> onLoad() {
-    return _loadCompleter.future;
-  }
+  Future<Texture> get onLoad => _onLoad;
 
 }
 

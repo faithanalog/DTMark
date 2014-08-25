@@ -1,21 +1,21 @@
 part of dtmark;
 
 class FontRenderer {
-  
+
   double scale = 1.0;
   int size = 0;
-  
+
   Float32List charWidths = new Float32List(256);
   Float32List charHeights = new Float32List(256);
   Float32List charU0 = new Float32List(256);
   Float32List charU1 = new Float32List(256);
   Float32List charV0 = new Float32List(256);
   Float32List charV1 = new Float32List(256);
-  
+
   double xSpacing = 0.0;
-  
+
   Texture _tex;
-  
+
   FontRenderer(String url, WebGL.RenderingContext gl) {
     HttpRequest.getString(url).then((text) {
       var fontInfo = JSON.decode(text);
@@ -34,31 +34,43 @@ class FontRenderer {
       }
     });
   }
-  
+
   /**
-   * Creates a 6 wide by 8 tall monospace font from an embedded image
+   * Creates a monospace font renderer from an existing texture [tex].
+   * [charWidth] and [charHeight] define the dimensions of the actual
+   * text characters, while [cellWidth] and [cellHeight] define the
+   * dimensions of each cell. See FontRenderer.lowResMono src for example.
    */
-  FontRenderer.lowResMono(WebGL.RenderingContext gl) {
+  FontRenderer.mono(Texture tex, WebGL.RenderingContext gl, int charWidth,
+      int charHeight, int cellWidth, int cellHeight) {
+
     size = 8;
-    double cwidth = 5.0;
-    double cheight = 7.0;
-    
+    double cwidth = charWidth.toDouble();
+    double cheight = charHeight.toDouble();
+
     //U/V width/heights of each character cell
-    const double texWidth = 5.0 / 128.0;
-    const double texHeight = 7.0 / 128.0;
+    double texWidth = cwidth / tex.width;
+    double texHeight = cheight / tex.height;
     xSpacing = 1.0;
-    
+
     for (var i = 0; i < 256; i++) {
       charWidths[i] = cwidth;
       charHeights[i] = cheight;
-      charU0[i] = (i & 15) * (6 / 128);
-      charV0[i] = (i >> 4) * (8 / 128);
+      charU0[i] = (i & 15) * texWidth;
+      charV0[i] = (i >> 4) * texHeight;
       charU1[i] = charU0[i] + texWidth;
       charV1[i] = charV0[i] + texHeight;
     }
-    
+
+    _tex = tex;
+  }
+
+  /**
+   * Creates a 6 wide by 8 tall monospace font from an embedded image
+   */
+  factory FontRenderer.lowResMono(WebGL.RenderingContext gl) {
     //Image data, see res/font_bmp.png. Dimensions are 96x128
-    const String base64img = 
+    const String base64img =
       '''
 data:image/png;base64,
 iVBORw0KGgoAAAANSUhEUgAAAGAAAACACAYAAAD03Gy6AAAE5ElEQVR42u2c25LbIBBEkYv//2Xl
@@ -85,11 +97,11 @@ sbe03xAZ0Zbst1ynd7/B6quXCwLoAMrRAb8TEAABEAAgAAIAQAcQp6MDWAMABEAAgAAIAAAdQDk6
 gDUAQAAEAAiAAADQAZSjA1gDAARAAIAACAAAHUA5OoA1AEAABAAIgAAA0AGUowNYAwAEQACAAAgA
 AB1AOTqANQBAAAQACIAAANABlKMDWAMABEAAgAAIAOAZ+AOg2b+6t+iJHQAAAABJRU5ErkJggg==
       ''';
-    var img = new ImageElement();
-    img.src = base64img.replaceAll("\n", "");
-    img.onLoad.first.then((Event) => _tex = new Texture(img, gl));
+    var src = base64img.replaceAll("\n", "");
+    var tex = new Texture.load(src, gl);
+    return new FontRenderer.mono(tex, gl, 5, 7, 6, 8);
   }
-  
+
   FontRenderer.generate(String font, this.size, WebGL.RenderingContext gl) {
     var canvas = new CanvasElement();
     CanvasRenderingContext2D ctx = canvas.getContext("2d");
@@ -105,24 +117,24 @@ AB1AOTqANQBAAAQACIAAANABlKMDWAMABEAAgAAIAOAZ+AOg2b+6t+iJHQAAAABJRU5ErkJggg==
       charHeights[i] = charHeight;
       maxWidth = Math.max(maxWidth, metrics.width);
     }
-    
+
     maxWidth += 2.0;
     charHeight += 2.0;
-    
+
     int width = nextPowerOf2((maxWidth * 16).toInt());
     int height = nextPowerOf2((charHeight * 8).toInt());
-    
+
     const double oneOver16 = 1 / 16;
     const double oneOver8 = 1 / 8;
     double oneOverW = 1 / width;
     double oneOverH = 1 / height;
-    
+
     double cellOffX = oneOver16 * width;
     double cellOffY = oneOver8 * height;
-    
+
     canvas.width = width;
     canvas.height = height;
-    
+
     ctx.font = "$size\px $font";
     ctx.fillStyle = "#FFFFFF";
     ctx.textBaseline = "top";
@@ -133,10 +145,10 @@ AB1AOTqANQBAAAQACIAAANABlKMDWAMABEAAgAAIAOAZ+AOg2b+6t+iJHQAAAABJRU5ErkJggg==
       charV0[i] = (i >> 4) * oneOver8 + oneOverH;
       charU1[i] = charU0[i] + charWidths[i] * oneOverW;
       charV1[i] = charV0[i] + charHeights[i] * oneOverH;
-      
+
       ctx.fillText(char, (i & 15) * cellOffX, (i >> 4) * cellOffY);
     }
-    
+
     dispInfo(String char) {
       int cc = char.codeUnitAt(0);
       print("==$cc==");
@@ -144,10 +156,10 @@ AB1AOTqANQBAAAQACIAAANABlKMDWAMABEAAgAAIAOAZ+AOg2b+6t+iJHQAAAABJRU5ErkJggg==
       print("${charV0[cc]} ${charV1[cc]}");
       print("${charWidths[cc]} ${charHeights[cc]}");
     }
-    
+
     _tex = new Texture(canvas, gl, minFilter: WebGL.LINEAR_MIPMAP_LINEAR, magFilter: WebGL.LINEAR, mipmap: true);
   }
-  
+
   double getWidth(String str) {
     double w = 0.0;
     for (final code in str.codeUnits) {
@@ -155,11 +167,11 @@ AB1AOTqANQBAAAQACIAAANABlKMDWAMABEAAgAAIAOAZ+AOg2b+6t+iJHQAAAABJRU5ErkJggg==
     }
     return (w + xSpacing * str.length) * scale;
   }
-  
+
   double getHeight() {
     return size * scale;
   }
-  
+
   void drawString(SpriteBatch batch, String str, double x, double y) {
     for (final code in str.codeUnits) {
       if (code >= 256) {
@@ -169,14 +181,14 @@ AB1AOTqANQBAAAQACIAAANABlKMDWAMABEAAgAAIAOAZ+AOg2b+6t+iJHQAAAABJRU5ErkJggg==
       x += (charWidths[code] + xSpacing) * scale;
     }
   }
-  
+
   void drawStringCentered(SpriteBatch batch, String str, double x, double y) {
     int w = (getWidth(str) * 0.5).floor();
     drawString(batch, str, x - w, y);
   }
-  
+
   void _drawChar(SpriteBatch batch, int code, double x, double y) {
     batch.drawTexRegionUV(_tex, x, y, charWidths[code] * scale, charHeights[code] * scale, charU0[code], charV0[code], charU1[code], charV1[code]);
   }
-  
+
 }
