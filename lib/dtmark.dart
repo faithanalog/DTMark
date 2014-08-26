@@ -52,6 +52,10 @@ abstract class BaseGame {
 
   /**
    * All mouse coordinates are multiplied by this.
+   * Use for if your [canvasScale] != 1.0 or your orthographics matrix
+   * resolution != canvas resolution.
+   *
+   * For example, if [canvasScale] is 2.0, set this to 2.0
    */
   double mousePosScale = 1.0;
 
@@ -62,11 +66,21 @@ abstract class BaseGame {
   bool _useAnimFrame;
   bool _useDeltaTime;
 
+  /*
+   * Controllers for all event streams
+   * This is very similar to the UI event stuff, and uses similar events
+   */
+  StreamController<GameMouseEvent> _mouseDownController = new StreamController();
+  StreamController<GameMouseEvent> _mouseUpController = new StreamController();
+  StreamController<GameMouseEvent> _mouseMoveController = new StreamController();
+  StreamController<GameKeyboardEvent> _keyDownController = new StreamController();
+  StreamController<GameKeyboardEvent> _keyUpController = new StreamController();
+
   /**
    * Whether or not to invert Y values from what they are provided as in the event.
    * This applies to what mouseY is set to.
    */
-  bool invertMouseY = false;
+  bool invertMouseY = true;
 
   /**
    * Base game constructor. [frameRate] is only used when useAnimFrame is false,
@@ -86,19 +100,19 @@ abstract class BaseGame {
 
     if (!touchSupport) {
       canvas.onMouseDown.listen((evt) {
-        onMouseDown((evt.offset.x * canvasScale * mousePosScale).toInt(), (evt.offset.y * canvasScale * mousePosScale).toInt(), evt.button);
+        _onMouseDown((evt.offset.x * canvasScale * mousePosScale).toInt(), (evt.offset.y * canvasScale * mousePosScale).toInt(), evt.button);
       });
       canvas.onMouseUp.listen((evt) {
-        onMouseUp((evt.offset.x * canvasScale * mousePosScale).toInt(), (evt.offset.y * canvasScale * mousePosScale).toInt(), evt.button);
+        _onMouseUp((evt.offset.x * canvasScale * mousePosScale).toInt(), (evt.offset.y * canvasScale * mousePosScale).toInt(), evt.button);
       });
       canvas.onMouseMove.listen((evt) {
-        onMouseMove((evt.offset.x * canvasScale * mousePosScale).toInt(), (evt.offset.y * canvasScale * mousePosScale).toInt());
+        _onMouseMove((evt.offset.x * canvasScale * mousePosScale).toInt(), (evt.offset.y * canvasScale * mousePosScale).toInt());
       });
       canvas.onKeyDown.listen((evt) {
-        onKeyDown(evt.keyCode);
+        {onKeyDown(evt.keyCode);
       });
       canvas.onKeyUp.listen((evt) {
-        onKeyUp(evt.keyCode);
+        _onKeyUp(evt.keyCode);
       });
     } else {
       //Done through JS stuff to support cocoonjs
@@ -106,21 +120,23 @@ abstract class BaseGame {
         JsObject ev = new JsObject.fromBrowserObject(evt);
         JsObject touch = new JsObject.fromBrowserObject(ev["changedTouches"][0]);
         Point offset = new Point(touch["clientX"], touch["clientY"]) - canvas.client.topLeft;
-        onMouseDown((offset.x * canvasScale * mousePosScale).toInt(), (offset.y * canvasScale * mousePosScale).toInt(), 0);
+        _onMouseDown((offset.x * canvasScale * mousePosScale).toInt(), (offset.y * canvasScale * mousePosScale).toInt(), 0);
         evt.preventDefault();
       });
       canvas.onTouchEnd.listen((evt) {
         JsObject ev = new JsObject.fromBrowserObject(evt);
         JsObject touch = new JsObject.fromBrowserObject(ev["changedTouches"][0]);
         Point offset = new Point(touch["clientX"], touch["clientY"]) - canvas.client.topLeft;
-        onMouseUp((offset.x * canvasScale * mousePosScale).toInt(), (offset.y * canvasScale * mousePosScale).toInt(), 0);
+        _onMouseUp((offset.x * canvasScale * mousePosScale).toInt(), (offset.y * canvasScale * mousePosScale).toInt(), 0);
+        _mouseX = -1;
+        _mouseY = -1;
         evt.preventDefault();
       });
       canvas.onTouchMove.listen((evt) {
         JsObject ev = new JsObject.fromBrowserObject(evt);
         JsObject touch = new JsObject.fromBrowserObject(ev["changedTouches"][0]);
         Point offset = new Point(touch["clientX"], touch["clientY"]) - canvas.client.topLeft;
-        onMouseMove((offset.x * canvasScale * mousePosScale).toInt(), (offset.y * canvasScale * mousePosScale).toInt());
+        _onMouseMove((offset.x * canvasScale * mousePosScale).toInt(), (offset.y * canvasScale * mousePosScale).toInt());
         evt.preventDefault();
       });
     }
@@ -198,38 +214,81 @@ abstract class BaseGame {
 
   }
 
-  void onKeyDown(int key) {
+  void _onKeyDown(int key) {
     _keys[key] = 1;
+    keyDown(key);
+    _keyDownController.add(new GameKeyboardEvent(key));
   }
 
-  void onKeyUp(int key) {
+  void _onKeyUp(int key) {
     _keys[key] = 0;
+    keyUp(key);
+    _keyUpController.add(new GameKeyboardEvent(key));
   }
 
-  void onMouseDown(int x, int y, int btn) {
+  void _onMouseDown(int x, int y, int btn) {
     _mouseX = x;
     _mouseY = y;
     if (invertMouseY) {
       _mouseY = (canvas.height * mousePosScale).toInt() - _mouseY - 1;
     }
     _mouseButtons[btn] = 1;
+    mouseDown(_mouseX, _mouseY, btn);
+    _mouseDownController.add(new GameMouseEvent(x, y, btn));
   }
 
-  void onMouseUp(int x, int y, int btn) {
+  void _onMouseUp(int x, int y, int btn) {
     _mouseX = x;
     _mouseY = y;
     if (invertMouseY) {
       _mouseY = (canvas.height * mousePosScale).toInt() - _mouseY - 1;
     }
     _mouseButtons[btn] = 0;
+    mouseUp(_mouseX, _mouseY);
+    _mouseUpController.add(new GameMouseEvent(x, y, btn));
   }
 
-  void onMouseMove(int x, int y) {
+  void _onMouseMove(int x, int y) {
     _mouseX = x;
     _mouseY = y;
     if (invertMouseY) {
       _mouseY = (canvas.height * mousePosScale).toInt() - _mouseY - 1;
     }
+    mouseMove(x, y);
+    _mouseDownController.add(new GameMouseEvent(x, y, -1));
+  }
+
+  /*
+   * Games have 2 options for input handling: Override keyDown,keyUp, etc.
+   * Or, use the streams provided below. Both can be used simultaneously.
+   * The streams are useful for pieces of the game that want to listen
+   * for say specific key events, whereas overriding the methods
+   * makes it easier to just get input into the game.
+   */
+  Stream<GameMouseEvent> get onMouseDown => _mouseDownController.stream;
+  Stream<GameMouseEvent> get onMouseUp => _mouseUpController.stream;
+  Stream<GameMouseEvent> get onMouseMove => _mouseMoveController.stream;
+  Stream<GameKeyboardEvent> get onKeyDown => _keyDownController.stream;
+  Stream<GameKeyboardEvent> get onKeyUp => _keyUpController.stream;
+
+  void keyDown(int key) {}
+  void keyUp(int key) {}
+  void mouseDown(int x, int y, int btn) {}
+  void mouesUp(int x, int y, int btn) {}
+  void mouseMove(int x, int y) {}
+
+  /**
+   * Sets an internal key state. Does not fire an event
+   */
+  void setKey(int key, bool down) {
+    _keys[key & 0xFF] = down ? 1 : 0;
+  }
+
+  /**
+   * Sets an internal mouse button state. Does not fire an event
+   */
+  void setMouse(int btn, bool down) {
+    _mouseButtons[btn & 0x1F] = down ? 1 : 0;
   }
 
   bool isKeyDown(int key) {
@@ -253,4 +312,14 @@ int nextPowerOf2(int val) {
     powof2 <<= 1;
   }
   return powof2;
+}
+
+class GameMouseEvent {
+  int x, y, button;
+  MouseEvent(this.x, this.y, this.button);
+}
+
+class GameKeyboardEvent {
+  int key;
+  KeyboardEvent(this.key);
 }
