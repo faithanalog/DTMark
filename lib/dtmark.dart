@@ -109,7 +109,7 @@ abstract class BaseGame {
         _onMouseMove((evt.offset.x * canvasScale * mousePosScale).toInt(), (evt.offset.y * canvasScale * mousePosScale).toInt());
       });
       canvas.onKeyDown.listen((evt) {
-        {onKeyDown(evt.keyCode);
+        _onKeyDown(evt.keyCode);
       });
       canvas.onKeyUp.listen((evt) {
         _onKeyUp(evt.keyCode);
@@ -244,7 +244,7 @@ abstract class BaseGame {
       _mouseY = (canvas.height * mousePosScale).toInt() - _mouseY - 1;
     }
     _mouseButtons[btn] = 0;
-    mouseUp(_mouseX, _mouseY);
+    mouseUp(_mouseX, _mouseY, btn);
     _mouseUpController.add(new GameMouseEvent(x, y, btn));
   }
 
@@ -274,7 +274,7 @@ abstract class BaseGame {
   void keyDown(int key) {}
   void keyUp(int key) {}
   void mouseDown(int x, int y, int btn) {}
-  void mouesUp(int x, int y, int btn) {}
+  void mouseUp(int x, int y, int btn) {}
   void mouseMove(int x, int y) {}
 
   /**
@@ -316,10 +316,10 @@ int nextPowerOf2(int val) {
 
 class GameMouseEvent {
   int x, y, button;
-  MouseEvent(this.x, this.y, this.button);
+  GameMouseEvent(this.x, this.y, this.button);
 }
 
 class GameKeyboardEvent {
   int key;
-  KeyboardEvent(this.key);
+  GameKeyboardEvent(this.key);
 }

@@ -240,7 +240,7 @@ class RootPanel extends Container {
         _keyDown(new KeyDownEvent(this, evt.key));
       }
     });
-    game.onKeyUp.lisetn((evt) {
+    game.onKeyUp.listen((evt) {
       if (active) {
         _keyUp(new KeyUpEvent(this, evt.key));
       }
