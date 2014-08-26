@@ -1,28 +1,30 @@
 DTMark
 ===
 This is a basic library to make it simpler to start making a game. It
-has support for a tick rate independant of framerate (more useful in the
-future when it provides a partial tick value for rendering), input
-handling, texture loading, and rendering of basic colored and textured
+has support for a tick rate independant of framerate, input handling,
+texture loading, and rendering of basic colored and textured
 rectangles. It also has a built in font renderer, with an included low res
 font as well as the ability to generate a font on the fly.
 It does not handle a lack of webgl support, that must be handled by the game
 for now.
 
+Do keep in mind that this is a work in progress and not really fit for widespead use.
+Breaking changes can and will happen, and I'm not documenting
+anything just yet.
+
 Usage
 ---
 To start, simply make a class that extends BaseGame. Then instantiate it and
-call launchGame on it. Here is a basic example. More examples may be added
-later when it is more complete.
+call launchGame on it. Here is a basic example.
 ```dart
 import 'package:dtmark/dtmark.dart' as DTMark;
 import 'dart:html';
 
 class Game extends DTMark.BaseGame {
 
-  //Canvas with id game_canvas is in the html.
+  //Canvas with id game_canvas is in the hypothetical html.
   //frameRate and tickRate are in frames/ticks per second.
-  Game(): super(querySelector("#game_canvas"), frameRate: 60.0, tickRate: 60.0);
+  Game(): super(document.getElementById("game_canvas"), frameRate: 60.0, tickRate: 60.0);
   
   @override
   void launchGame() {
@@ -47,32 +49,13 @@ class Game extends DTMark.BaseGame {
   }
   
   //Input listeners are automatically added to the canvas provided
-  //to the constructor. They will call these methods so just override
-  //them. Be sure to call the super method, or the built in key state
-  //and mouse state tracking will not work!
+  //to the constructor. They will call these methods so just override them.
   @override
-  void onKeyDown(KeyboardEvent evt) {
-    super.onKeyDown(evt);
+  void keyDown(int key) {
   }
   
   @override
-  void onKeyUp(KeyboardEvent evt) {
-    super.onKeyUp(evt);
-  }
-  
-  @override
-  void onMouseDown(MouseEvent evt) {
-    super.onMouseDown(evt);
-  }
-  
-  @override
-  void onMouseUp(MouseEvent evt) {
-    super.onMouseUp(evt);
-  }
-  
-  @override
-  void onMouseMove(MouseEvent evt) {
-    super.onMouseMove(evt);
+  void keyUp(int key) {
   }
 }
 
