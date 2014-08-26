@@ -1,7 +1,7 @@
 name: dtmark
 version: 0.6.0
 author: unknownloner
-description: Attempt at a game engine
+description: Basic game library
 dependencies:
   browser_detect: any
   vector_math: any
