@@ -130,13 +130,11 @@ AB1AOTqANQBAAAQACIAAANABlKMDWAMABEAAgAAIAOAZ+AOg2b+6t+iJHQAAAABJRU5ErkJggg==
     int width = nextPowerOf2((maxWidth * 16).toInt());
     int height = nextPowerOf2((charHeight * 8).toInt());
 
-    const double oneOver16 = 1 / 16;
-    const double oneOver8 = 1 / 8;
     double oneOverW = 1 / width;
     double oneOverH = 1 / height;
 
-    double cellOffX = oneOver16 * width;
-    double cellOffY = oneOver8 * height;
+    double cellOffX = width / 16;
+    double cellOffY = height / 8;
 
     canvas.width = width;
     canvas.height = height;
@@ -147,8 +145,8 @@ AB1AOTqANQBAAAQACIAAANABlKMDWAMABEAAgAAIAOAZ+AOg2b+6t+iJHQAAAABJRU5ErkJggg==
     ctx.translate(1, 1);
     for (int i = 0; i < 128; i++) {
       var char = chars.substring(i, i + 1);
-      charU0[i] = (i & 15) * oneOver16 + oneOverW;
-      charV0[i] = (i >> 4) * oneOver8 + oneOverH;
+      charU0[i] = (i & 15) / 16.0 + oneOverW;
+      charV0[i] = (i >> 4) / 8.0 + oneOverH;
       charU1[i] = charU0[i] + charWidths[i] * oneOverW;
       charV1[i] = charV0[i] + charHeights[i] * oneOverH;
 
