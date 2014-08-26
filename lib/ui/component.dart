@@ -215,22 +215,22 @@ class RootPanel extends Container {
     var gl = game.gl;
     batch = new SpriteBatch(gl);
     game.onMouseDown.listen((evt) {
-      _mouseX = evt.x;
-      _mouseY = evt.y;
+      _mouseX = evt.x ~/ scale;
+      _mouseY = evt.y ~/ scale;
       if (active) {
         _mouseDown(new MouseDownEvent(this, _mouseX, _mouseY, evt.button));
       }
     });
     game.onMouseUp.listen((evt) {
-      _mouseX = evt.x;
-      _mouseY = evt.y;
+      _mouseX = evt.x ~/ scale;
+      _mouseY = evt.y ~/ scale;
       if (active) {
         _mouseUp(new MouseUpEvent(this, _mouseX, _mouseY, evt.button));
       }
     });
     game.onMouseMove.listen((evt) {
-      _mouseX = evt.x;
-      _mouseY = evt.y;
+      _mouseX = evt.x ~/ scale;
+      _mouseY = evt.y ~/ scale;
       if (active) {
         _mouseMove(new MouseMoveEvent(this, _mouseX, _mouseY));
       }

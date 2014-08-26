@@ -40,28 +40,34 @@ class FontRenderer {
    * [charWidth] and [charHeight] define the dimensions of the actual
    * text characters, while [cellWidth] and [cellHeight] define the
    * dimensions of each cell. See FontRenderer.lowResMono src for example.
+   * Size is set to charHeight unless [size] is defined. [xSpacing]
+   * defaults to 1
    */
   FontRenderer.mono(Texture tex, WebGL.RenderingContext gl, int charWidth,
-      int charHeight, int cellWidth, int cellHeight) {
+      int charHeight, int cellWidth, int cellHeight, {int xSpacing: 1, int size: -1}) {
 
-    size = 8;
-    double cwidth = charWidth.toDouble();
-    double cheight = charHeight.toDouble();
-
-    //U/V width/heights of each character cell
-    double texWidth = cwidth / tex.width;
-    double texHeight = cheight / tex.height;
-    xSpacing = 1.0;
-
+    this.size = size == -1 ? charHeight : size;
+    this.xSpacing = xSpacing.toDouble();
     for (var i = 0; i < 256; i++) {
-      charWidths[i] = cwidth;
-      charHeights[i] = cheight;
-      charU0[i] = (i & 15) * texWidth;
-      charV0[i] = (i >> 4) * texHeight;
-      charU1[i] = charU0[i] + texWidth;
-      charV1[i] = charV0[i] + texHeight;
+      charWidths[i] = charWidth.toDouble();
+      charHeights[i] = charHeight.toDouble();
     }
 
+    tex.onLoad.then((evt) {
+      double cwidth = charWidth / tex.width;
+      double cheight = charHeight / tex.height;
+
+      //U/V width/heights of each character cell
+      double texWidth = cellWidth / tex.width;
+      double texHeight = cellHeight / tex.height;
+
+      for (var i = 0; i < 256; i++) {
+        charU0[i] = (i & 15) * texWidth;
+        charV0[i] = (i >> 4) * texHeight;
+        charU1[i] = charU0[i] + cwidth;
+        charV1[i] = charV0[i] + cheight;
+      }
+    });
     _tex = tex;
   }
 

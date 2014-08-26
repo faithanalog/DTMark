@@ -234,7 +234,7 @@ abstract class BaseGame {
     }
     _mouseButtons[btn] = 1;
     mouseDown(_mouseX, _mouseY, btn);
-    _mouseDownController.add(new GameMouseEvent(x, y, btn));
+    _mouseDownController.add(new GameMouseEvent(_mouseX, _mouseY, btn));
   }
 
   void _onMouseUp(int x, int y, int btn) {
@@ -245,7 +245,7 @@ abstract class BaseGame {
     }
     _mouseButtons[btn] = 0;
     mouseUp(_mouseX, _mouseY, btn);
-    _mouseUpController.add(new GameMouseEvent(x, y, btn));
+    _mouseUpController.add(new GameMouseEvent(_mouseX, _mouseY, btn));
   }
 
   void _onMouseMove(int x, int y) {
@@ -255,7 +255,7 @@ abstract class BaseGame {
       _mouseY = (canvas.height * mousePosScale).toInt() - _mouseY - 1;
     }
     mouseMove(x, y);
-    _mouseDownController.add(new GameMouseEvent(x, y, -1));
+    _mouseMoveController.add(new GameMouseEvent(_mouseX, _mouseY, -1));
   }
 
   /*
