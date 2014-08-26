@@ -128,8 +128,7 @@ abstract class BaseGame {
         JsObject touch = new JsObject.fromBrowserObject(ev["changedTouches"][0]);
         Point offset = new Point(touch["clientX"], touch["clientY"]) - canvas.client.topLeft;
         _onMouseUp((offset.x * canvasScale * mousePosScale).toInt(), (offset.y * canvasScale * mousePosScale).toInt(), 0);
-        _mouseX = -1;
-        _mouseY = -1;
+        _onMouseMove(-1, -1);
         evt.preventDefault();
       });
       canvas.onTouchMove.listen((evt) {
