@@ -83,7 +83,7 @@ class SpriteAnimation {
    * Starts or resumes the animation
    */
   void play() {
-    _animStart = new DateTime.now().millisecondsSinceEpoch - ((_savedFrame - startFrame) * frameDuration);
+    _animStart = BaseGame.frameTime - ((_savedFrame - startFrame) * frameDuration);
     _savedFrame = 0;
     _playing = true;
   }
@@ -123,7 +123,7 @@ class SpriteAnimation {
     if (!_playing) {
       return _savedFrame;
     } else {
-      int time = new DateTime.now().millisecondsSinceEpoch - _animStart;
+      int time = BaseGame.frameTime - _animStart;
       int duration = numFrames * frameDuration;
       int frame;
       if (loop) {

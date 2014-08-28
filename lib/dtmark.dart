@@ -46,7 +46,7 @@ abstract class BaseGame {
   double _partialTick = 0.0;
 
   //Time in milliseconds at the start of the frame
-  int _frameTime = 0;
+  static int _frameTime = 0;
 
   /**
    * canvasResolution / windowResolution
@@ -364,7 +364,7 @@ abstract class BaseGame {
    * The current system time in milliseconds at the start of the current frame.
    * Useful for animations.
    */
-  int get frameTime => _frameTime;
+  static int get frameTime => _frameTime;
 
 
 }
