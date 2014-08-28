@@ -1,29 +1,29 @@
 part of dtmark;
 
 class Button extends TextComponent {
-  
+
   StreamController<ButtonClickEvent> _clickController = new StreamController();
   bool _clicked = false;
-  
-  
+
+
   Button([String text = ""]) {
     fontSize = 16;
     height = fontSize + 6;
-    
+
     this.text = text;
     if (text.isNotEmpty) {
       font.scale = fontSize / font.size;
       width = font.getWidth(text).floor() + 6;
     }
   }
-  
+
   @override
   void render(SpriteBatch batch) {
     bool hasMouse = containsMouse();
     if (_clicked && !hasMouse) {
       _clicked = false;
     }
-    
+
     font.scale = fontSize / font.size;
     batch.begin();
     batch.color.setValues(0.6, 0.6, 0.6, 1.0);
@@ -40,13 +40,13 @@ class Button extends TextComponent {
     font.drawStringCentered(batch, text, (width >> 1).toDouble(), ((height - font.getHeight()) / 2).floorToDouble());
     batch.end();
   }
-  
+
   @override
   _mouseDown(MouseDownEvent evt) {
     super._mouseDown(evt);
     _clicked = true;
   }
-  
+
   @override
   _mouseUp(MouseUpEvent evt) {
     super._mouseUp(evt);
@@ -55,13 +55,13 @@ class Button extends TextComponent {
       _clicked = false;
     }
   }
-  
+
   Stream<ButtonClickEvent> get onClick => _clickController.stream;
-  
+
 }
 
 class ButtonClickEvent extends UIEvent {
-  
+
   ButtonClickEvent(Component src): super(src);
-  
+
 }

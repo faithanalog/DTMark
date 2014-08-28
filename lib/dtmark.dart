@@ -18,6 +18,7 @@ part 'gl/texture.dart';
 //2D stuff
 part '2d/spritebatch.dart';
 part '2d/fontrenderer.dart';
+part '2d/animation.dart';
 
 //Audio
 part 'audio/streaming.dart';
@@ -43,6 +44,9 @@ abstract class BaseGame {
   double _lastTime = -1.0;
   double _deltaTime = 0.0;
   double _partialTick = 0.0;
+
+  //Time in milliseconds at the start of the frame
+  int _frameTime = 0;
 
   /**
    * canvasResolution / windowResolution
@@ -202,13 +206,20 @@ abstract class BaseGame {
       tick();
     }
     _partialTick = _missedTicks;
+    _frameTime = new DateTime.now().millisecondsSinceEpoch;
     render();
   }
 
+  /**
+   * Called every frame. Override this to provide your render code
+   */
   void render() {
 
   }
 
+  /**
+   * Called every computation tick. Override this to provide your game logic
+   */
   void tick() {
 
   }
@@ -270,10 +281,29 @@ abstract class BaseGame {
   Stream<GameKeyboardEvent> get onKeyDown => _keyDownController.stream;
   Stream<GameKeyboardEvent> get onKeyUp => _keyUpController.stream;
 
+  /**
+   * Called whenever a key is pressed. Override to handle event.
+   */
   void keyDown(int key) {}
+
+  /**
+   * Called whenever a key is released. Override to handle event.
+   */
   void keyUp(int key) {}
+
+  /**
+   * Called whenever a mouse button is pressed. Override to handle event.
+   */
   void mouseDown(int x, int y, int btn) {}
+
+  /**
+   * Called whenever a mouse button is released. Override to handle event.
+   */
   void mouseUp(int x, int y, int btn) {}
+
+  /**
+   * Called whenever the mouse is moved. Override to handle event.
+   */
   void mouseMove(int x, int y) {}
 
   /**
@@ -290,18 +320,52 @@ abstract class BaseGame {
     _mouseButtons[btn & 0x1F] = down ? 1 : 0;
   }
 
+  /**
+   * Returns the state of the given keyboard [key].
+   */
   bool isKeyDown(int key) {
     return _keys[key & 0xFF] != 0;
   }
 
+  /**
+   * Returns the state of the given mouse button [btn].
+   */
   bool isMouseDown(int btn) {
     return _mouseButtons[btn & 0x1F] != 0;
   }
 
+  /**
+   * Mouse X coordinate in pixels
+   */
   int get mouseX => _mouseX;
+
+  /**
+   * Mouse Y coordinate in pixels
+   */
   int get mouseY => _mouseY;
+
+  /**
+   * The percent of a game computation tick that has elapsed since the last tick.
+   * For example, of a game has 1 computation tick every 50 milliseconds, and
+   * the a frame renders 20 milliseconds after the last computation tick,
+   * [partialTick] will be 0.4. If useDeltaTime was set to true in the constructor,
+   * this will always be 0.0
+   */
   double get partialTick => _partialTick;
+
+  /**
+   * If useDeltaTime was set to true in the constructor, this will be the
+   * percent of a tick that has elapsed since the last computation tick.
+   * Otherwise, it will be 0.0. [deltaTime] will never be greater than 1.0
+   */
   double get deltaTime => _deltaTime;
+
+  /**
+   * The current system time in milliseconds at the start of the current frame.
+   * Useful for animations.
+   */
+  int get frameTime => _frameTime;
+
 
 }
 

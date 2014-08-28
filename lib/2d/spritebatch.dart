@@ -1,39 +1,39 @@
 part of dtmark;
 
-//TODO Add Z index (make it a vert attrib) so that things don't have to be painter's algorithim. good idea? maybe...
+//TODO: Add Z index (make it a vert attrib) so that things don't have to be painter's algorithim. good idea? maybe...
 class SpriteBatch {
-  
+
   //Max 65536 verts before flush
   static int BATCH_MAX_VERTS = 65536;
-  
+
   //X,Y,U,V,R,G,B,A
   Float32List verts = new Float32List(8 * BATCH_MAX_VERTS);
   WebGL.RenderingContext gl;
   WebGL.Buffer buffer;
   WebGL.Buffer indices;
   Shader _shader;
-  
+
   Texture whiteTex;
   Texture _lastTex = null;
   Vector4 color = new Vector4(1.0, 1.0, 1.0, 1.0);
   int _vOff = 0;
   int _vOffMax = 8 * BATCH_MAX_VERTS;
-  
-  
+
+
   //Max vertices we've actually used, we'll use this for buffer streaming so we dont use tons of vram
   int _maxVertsUsed = 0;
-  
+
   Matrix4 _projection;
   Matrix4 _modelView;
   Matrix4 _transform = new Matrix4.identity();
   bool _rendering = false;
-  
+
   bool _texChanged = false;
-  
+
   SpriteBatch(this.gl, {int width: 1, int height: 1}) {
     _shader = getBatchShader(gl);
     buffer = gl.createBuffer();
-    
+
     //Generate indices
     var indData = new Uint16List(6 * BATCH_MAX_VERTS ~/ 4);
     var index = 0;
@@ -50,16 +50,16 @@ class SpriteBatch {
     gl.bindBuffer(WebGL.ELEMENT_ARRAY_BUFFER, indices);
     gl.bufferDataTyped(WebGL.ELEMENT_ARRAY_BUFFER, indData, WebGL.STATIC_DRAW);
     gl.bindBuffer(WebGL.ELEMENT_ARRAY_BUFFER, null);
-    
-    
+
+
     whiteTex = new Texture(null, gl);
     gl.texImage2DTyped(WebGL.TEXTURE_2D, 0, WebGL.RGBA, 1, 1, 0, WebGL.RGBA, WebGL.UNSIGNED_BYTE, new Uint8List.fromList([255, 255, 255, 255]));
-    
+
     _projection = makeOrthographicMatrix(0, width, 0, height, -1, 1);
     _modelView = new Matrix4.identity();
     _lastTex = whiteTex;
   }
-  
+
   void _addVert(double x, double y, double u, double v) {
     if (_vOff >= _vOffMax) {
       _flush();
@@ -74,17 +74,17 @@ class SpriteBatch {
     verts[_vOff + 7] = color.a;
     _vOff += 8;
   }
-  
+
   //Vertex 0 is top left, Vertex 1 is bottom right
   void _addQuad(double x0, double y0, double u0, double v0, double x1, double y1, double u1, double v1) {
-    
+
     //NEW: Top left, bottom left, bottom right, top right
     _addVert(x0, y0, u0, v0);
     _addVert(x0, y1, u0, v1);
     _addVert(x1, y1, u1, v1);
     _addVert(x1, y0, u1, v0);
   }
-  
+
   void _switchTexture(Texture tex) {
     if (_lastTex != tex) {
       _flush();
@@ -92,11 +92,11 @@ class SpriteBatch {
       _lastTex = tex;
     }
   }
-  
+
   void fillRect(double x, double y, double width, double height) {
     drawTexture(whiteTex, x, y, width, height);
   }
-  
+
   void drawTexture(Texture tex, double x, double y, [double width, double height]) {
     _switchTexture(tex);
     if (width == null) {
@@ -107,7 +107,7 @@ class SpriteBatch {
     }
     _addQuad(x, y + height, 0.0, 0.0, x + width, y, tex.maxU, tex.maxV);
   }
-  
+
   void drawRegion(TextureRegion tex, double x, double y, [double width, double height]) {
     if (width == null) {
       width = tex.width.toDouble();
@@ -117,11 +117,11 @@ class SpriteBatch {
     }
     drawTexRegion(tex.texture, x, y, width, height, tex.x, tex.y, tex.width, tex.height);
   }
-  
+
   void drawTexScaled(Texture tex, double x, double y, double scale) {
     drawTexture(tex, x, y, tex.width * scale, tex.height * scale);
   }
-  
+
   void drawTexRegion(Texture tex, double x, double y, double width, double height, int texX, int texY, int texWidth, int texHeight) {
     double w = 1 / tex.width;
     double h = 1 / tex.height;
@@ -131,12 +131,22 @@ class SpriteBatch {
     double v1 = v0 + texHeight * h;
     drawTexRegionUV(tex, x, y, width, height, u0, v0, u1, v1);
   }
-  
+
   void drawTexRegionUV(Texture tex, double x, double y, double width, double height, double u0, double v0, double u1, double v1) {
     _switchTexture(tex);
     _addQuad(x, y + height, u0, v0, x + width, y, u1, v1);
   }
-  
+
+  void drawAnimation(SpriteAnimation anim, double x, double y, [double width, double height]) {
+    if (width == null) {
+      width = anim.width.toDouble();
+    }
+    if (height == null) {
+      height = anim.height.toDouble();
+    }
+    drawTexRegion(anim.animationFrames, x, y, width, height, anim.frameX, anim.frameY, anim.width, anim.height);
+  }
+
   set projection(Matrix4 proj) {
     if (proj == null) {
       _projection = new Matrix4.identity();
@@ -144,7 +154,7 @@ class SpriteBatch {
       _projection = proj;
     }
   }
-  
+
   set modelView(Matrix4 mview) {
     if (mview == null) {
       _modelView = new Matrix4.identity();
@@ -152,7 +162,7 @@ class SpriteBatch {
       _modelView = mview;
     }
   }
-  
+
   set shader(Shader shader) {
     if (shader == null) {
       _shader = _batchShader;
@@ -160,12 +170,12 @@ class SpriteBatch {
       _shader = shader;
     }
   }
-  
+
   Shader get shader => _shader;
-  
+
   Matrix4 get projection => _projection;
   Matrix4 get modelView => _modelView;
-  
+
   void begin() {
     _rendering = true;
     _texChanged = true;
@@ -174,18 +184,18 @@ class SpriteBatch {
     _transform.multiply(_modelView);
     _shader.setUniformMatrix4fv("u_transform", false, _transform);
     _shader.setUniform1i("u_texture", 0);
-    
+
     gl.enableVertexAttribArray(0);
     gl.enableVertexAttribArray(1);
     gl.enableVertexAttribArray(2);
-    
+
     gl.bindBuffer(WebGL.ARRAY_BUFFER, buffer);
     gl.bindBuffer(WebGL.ELEMENT_ARRAY_BUFFER, indices);
     gl.vertexAttribPointer(0, 2, WebGL.FLOAT, false, 32, 0);
     gl.vertexAttribPointer(1, 2, WebGL.FLOAT, false, 32, 8);
     gl.vertexAttribPointer(2, 4, WebGL.FLOAT, false, 32, 16);
   }
-  
+
   void end() {
     _flush();
     gl.bindBuffer(WebGL.ELEMENT_ARRAY_BUFFER, null);
@@ -194,11 +204,11 @@ class SpriteBatch {
     gl.disableVertexAttribArray(2);
     _rendering = false;
   }
-  
+
   void flush() {
       _flush();
   }
-  
+
   void _flush() {
     if (_vOff > 0) {
       if (_texChanged) {
@@ -212,7 +222,7 @@ class SpriteBatch {
     }
     _vOff = 0;
   }
-  
+
   static Shader _batchShader;
   static Shader getBatchShader(WebGL.RenderingContext gl) {
     if (_batchShader == null) {
@@ -224,7 +234,7 @@ class SpriteBatch {
     }
     return _batchShader;
   }
-  
+
   static const String VERT_SHADER =
 """
 uniform mat4 u_transform;
@@ -255,7 +265,7 @@ void main() {
   if (color.a == 0.0) {
     discard;
   }
-  gl_FragColor = color; 
+  gl_FragColor = color;
 }
 """;
 }

@@ -1,18 +1,18 @@
 part of dtmark;
 
 abstract class UIEvent {
-  
+
   final Component source;
-  
+
   UIEvent(this.source);
-  
+
 }
 
 abstract class DTMouseEvent extends UIEvent {
-  
+
   final int x, y;
   DTMouseEvent(Component source, this.x, this.y): super(source);
-  
+
 }
 
 class MouseDownEvent extends DTMouseEvent {
@@ -30,10 +30,10 @@ class MouseMoveEvent extends DTMouseEvent {
 }
 
 abstract class KeyEvent extends UIEvent {
-  
+
   final int key;
   KeyEvent(Component src, this.key): super(src);
-  
+
 }
 
 class KeyDownEvent extends KeyEvent {

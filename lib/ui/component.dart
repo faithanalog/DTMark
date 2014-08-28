@@ -1,8 +1,7 @@
 part of dtmark;
 
 /*
- * TODO
- * Render font (and ui elements too maybe?) with distance field shaders
+ * TODO: Render font (and ui elements too maybe?) with distance field shaders
  */
 
 class Align {
