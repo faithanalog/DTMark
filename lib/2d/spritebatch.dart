@@ -4,17 +4,46 @@ part of dtmark;
 class SpriteBatch {
 
   //Max 65536 verts before flush
+  /**
+   * The max number of verts to store in ram before rendering.
+   * Defaults to 65536, can be changed if needed. Changes affect
+   * all SpriteBatches created after the change.
+   */
   static int BATCH_MAX_VERTS = 65536;
 
   //X,Y,U,V,R,G,B,A
-  Float32List verts = new Float32List(8 * BATCH_MAX_VERTS);
-  WebGL.RenderingContext gl;
-  WebGL.Buffer buffer;
-  WebGL.Buffer indices;
+  /**
+   * The array used to store verts while batching.
+   */
+  final Float32List verts = new Float32List(8 * BATCH_MAX_VERTS);
+
+  /**
+   * WebGL context associated with this SpriteBatch
+   */
+  final WebGL.RenderingContext gl;
+
+  /**
+   * WebGL buffer used for vertices
+   */
+  final WebGL.Buffer buffer;
+
+  /**
+   * WebGL buffer used for indices
+   */
+  final WebGL.Buffer indices;
+
   Shader _shader;
 
-  Texture whiteTex;
+  /**
+   * A 1x1 pixel texture which is white. Used for rendering solid blocks of color
+   */
+  final Texture whiteTex;
   Texture _lastTex = null;
+
+  /**
+   * Color used when rendering anything with the SpriteBatch. Changing
+   * this will affect anything drawn after it is changed.
+   */
   Vector4 color = new Vector4(1.0, 1.0, 1.0, 1.0);
   int _vOff = 0;
   int _vOffMax = 8 * BATCH_MAX_VERTS;
@@ -30,6 +59,14 @@ class SpriteBatch {
 
   bool _texChanged = false;
 
+  /**
+   * Constructs a new SpriteBatch with the given rendering context [gl].
+   * If [width] and [height] are provided, they will be used to create
+   * a default orthographic matrix for the projection matrix with
+   * (0,0) as the bottom left corner, and (width - 1, height - 1) as the
+   * top right corner. If [width] and [height] are not provided,
+   * [projection] should be set manually.
+   */
   SpriteBatch(this.gl, {int width: 1, int height: 1}) {
     _shader = getBatchShader(gl);
     buffer = gl.createBuffer();
@@ -60,6 +97,10 @@ class SpriteBatch {
     _lastTex = whiteTex;
   }
 
+  /**
+   * Adds a vertex with the given values to the vert buffer, flushing
+   * the buffer if it's full.
+   */
   void _addVert(double x, double y, double u, double v) {
     if (_vOff >= _vOffMax) {
       _flush();
@@ -76,6 +117,11 @@ class SpriteBatch {
   }
 
   //Vertex 0 is top left, Vertex 1 is bottom right
+  /**
+   * Adds a quad to the vert buffer with [_addVert].
+   * [x0], [y0], [u0], and [v0] refer to the top left corner, while
+   * [x1], [y1], [u1], and [v1] refer tothe bottom right corner.
+   */
   void _addQuad(double x0, double y0, double u0, double v0, double x1, double y1, double u1, double v1) {
 
     //NEW: Top left, bottom left, bottom right, top right
@@ -85,6 +131,11 @@ class SpriteBatch {
     _addVert(x1, y0, u1, v0);
   }
 
+  /**
+   * Renders the current buffered vertices with the current texture, and
+   * then switches the current texture to [tex]. If the current texture
+   * already is [tex], then does nothing.
+   */
   void _switchTexture(Texture tex) {
     if (_lastTex != tex) {
       _flush();
@@ -93,10 +144,17 @@ class SpriteBatch {
     }
   }
 
+  /**
+   * Fills a rectangle with the current color
+   */
   void fillRect(double x, double y, double width, double height) {
     drawTexture(whiteTex, x, y, width, height);
   }
 
+  /**
+   * Draws [tex] at ([x], [y]) with dimensions ([width], [height]) or
+   * the the dimensions of [tex] if size is not specified.
+   */
   void drawTexture(Texture tex, double x, double y, [double width, double height]) {
     _switchTexture(tex);
     if (width == null) {
@@ -108,20 +166,34 @@ class SpriteBatch {
     _addQuad(x, y + height, 0.0, 0.0, x + width, y, tex.maxU, tex.maxV);
   }
 
-  void drawRegion(TextureRegion tex, double x, double y, [double width, double height]) {
+  /**
+   * Draws [texRegion] at ([x], [y]) with dimensions
+   * ([width], [height]) or the dimensions of [texRegion] if
+   * size is not specified.
+   */
+  void drawRegion(TextureRegion texRegion, double x, double y, [double width, double height]) {
     if (width == null) {
-      width = tex.width.toDouble();
+      width = texRegion.width.toDouble();
     }
     if (height == null) {
-      height = tex.height.toDouble();
+      height = texRegion.height.toDouble();
     }
-    drawTexRegion(tex.texture, x, y, width, height, tex.x, tex.y, tex.width, tex.height);
+    drawTexRegion(texRegion.texture, x, y, width, height, texRegion.x, texRegion.y, tex.width, tex.height);
   }
 
+  /**
+   * Draws [tex] at ([x], [y]) at [scale] times the original size.
+   */
   void drawTexScaled(Texture tex, double x, double y, double scale) {
     drawTexture(tex, x, y, tex.width * scale, tex.height * scale);
   }
 
+  /**
+  * Draws a region of [tex] at ([x], [y]) with dimensions ([width], [height]).
+  * [texX] and [texY] define the upper left corner of the texture region
+  * in pixels. [texWidth] and [texHeight] define the width and height of
+  * the texture region in pixels.
+  */
   void drawTexRegion(Texture tex, double x, double y, double width, double height, int texX, int texY, int texWidth, int texHeight) {
     double w = 1 / tex.width;
     double h = 1 / tex.height;
@@ -132,11 +204,20 @@ class SpriteBatch {
     drawTexRegionUV(tex, x, y, width, height, u0, v0, u1, v1);
   }
 
+  /**
+   * Draws a region of [tex] at ([x], [y]) with dimensions ([width], [height]).
+   * ([u0], [v0]) defines the upper left corner of the texture region in UV
+   * coordinates. ([u1], [v1]) defines the bottom right corner.
+   */
   void drawTexRegionUV(Texture tex, double x, double y, double width, double height, double u0, double v0, double u1, double v1) {
     _switchTexture(tex);
     _addQuad(x, y + height, u0, v0, x + width, y, u1, v1);
   }
 
+  /**
+   * Draws the current frame of the animation [anim] at ([x], [y]). Dimensions
+   * are ([width], [height]), or the dimensions of [anim] if size is not specified.
+   */
   void drawAnimation(SpriteAnimation anim, double x, double y, [double width, double height]) {
     if (width == null) {
       width = anim.width.toDouble();
@@ -171,11 +252,38 @@ class SpriteBatch {
     }
   }
 
+  /**
+   * The current shader program used when rendering the batch. Setting
+   * this will not affect anything until the next time [begin] is called.
+   * Setting this to null will reset the shader to the default SpriteBatch
+   * shader.
+   */
   Shader get shader => _shader;
 
+  /**
+   * The current projection matrix. Setting this will not affect anything
+   * until the next time [begin] is called.
+   *
+   *     [projection] = null;
+   * is equivelant to
+   *     [projection] = new Matrix4.identity();
+   */
   Matrix4 get projection => _projection;
+
+  /**
+   * The current modelView matrix. Setting this will not affect anything
+   * until the next time [begin] is called.
+   *
+   *     [modelView] = null;
+   * is equivelant to
+   *     [modelView] = new Matrix4.identity();
+   */
   Matrix4 get modelView => _modelView;
 
+  /**
+   * Sets up the state required to render the sprite batch, including
+   * the current shader, transform matrix, and texture.
+   */
   void begin() {
     _rendering = true;
     _texChanged = true;
@@ -196,6 +304,11 @@ class SpriteBatch {
     gl.vertexAttribPointer(2, 4, WebGL.FLOAT, false, 32, 16);
   }
 
+  /**
+   * Flushes any remaining vertices from the SpriteBatch, unbinds the
+   * buffer bound to ELEMENT_ARRAY_BUFFER, and disables vertix attrib
+   * arrays 0, 1, and 2.
+   */
   void end() {
     _flush();
     gl.bindBuffer(WebGL.ELEMENT_ARRAY_BUFFER, null);
@@ -205,6 +318,9 @@ class SpriteBatch {
     _rendering = false;
   }
 
+  /**
+   * Renders all vertices buffered in the SpriteBatch
+   */
   void flush() {
       _flush();
   }
@@ -224,6 +340,10 @@ class SpriteBatch {
   }
 
   static Shader _batchShader;
+
+  /**
+   * Returns the default SpriteBatch shader. Creates it if it doesn't exist yet.
+   */
   static Shader getBatchShader(WebGL.RenderingContext gl) {
     if (_batchShader == null) {
       _batchShader = new Shader(VERT_SHADER, FRAG_SHADER, gl);
@@ -235,6 +355,9 @@ class SpriteBatch {
     return _batchShader;
   }
 
+  /**
+   * GLSL code of the default vertex shader
+   */
   static const String VERT_SHADER =
 """
 uniform mat4 u_transform;
@@ -252,6 +375,10 @@ void main() {
   gl_Position = u_transform * vec4(a_position, 0.0, 1.0);
 }
 """;
+
+  /**
+   * GLSL code of the default fragment shader
+   */
   static const String FRAG_SHADER =
 """
 precision mediump float;

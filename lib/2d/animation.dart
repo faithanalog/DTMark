@@ -158,4 +158,32 @@ class SpriteAnimation {
     return curFrame ~/ ((animationFrames.width + padX) ~/ cellWidth) * cellHeight;
   }
 
+  /**
+   * The U texture coordinate of the top left corner of the current frame.
+   */
+  double get frameU {
+    return frameX / animationFrames.width;
+  }
+
+  /**
+   * The V texture coordinate of the top left corner of the current frame.
+   */
+  double get frameV {
+    return frameY / animationFrames.height;
+  }
+
+  /**
+   * The width of the sprite in texture coordinates.
+   */
+  double get uvWidth {
+    return width / animationFrames.width;
+  }
+
+  /**
+   * The height of the sprite in texture coordinates.
+   */
+  double get uvHeight {
+    return height / animationFrames.height;
+  }
+
 }
