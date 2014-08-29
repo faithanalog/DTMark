@@ -1,22 +1,93 @@
 part of dtmark;
 
+/**
+ * A FontRenderer which can render text using a SpriteBatch. Only
+ * supports character codes from 0 to 255. All text characters are
+ * stored in one texture. The FontRenderer can generate a font on the fly
+ * with canvas, load a varying width font from JSON + an image, or load a
+ * monospace font from just an image. It also has a low-res font embedded
+ * in it (no support for accent marks).
+ */
 class FontRenderer {
 
+  /**
+   * When drawing a string, width and height is multiplied by this
+   */
   double scale = 1.0;
+
+  /**
+   * The height of the font
+   */
   int size = 0;
 
-  Float32List charWidths = new Float32List(256);
-  Float32List charHeights = new Float32List(256);
-  Float32List charU0 = new Float32List(256);
-  Float32List charU1 = new Float32List(256);
-  Float32List charV0 = new Float32List(256);
-  Float32List charV1 = new Float32List(256);
+  /**
+   * Array of all character widths in pixels
+   */
+  final Float32List charWidths = new Float32List(256);
 
+  /**
+   * Array of all character heights in pixels
+   */
+  final Float32List charHeights = new Float32List(256);
+
+  /**
+   * Array of top left U texture coordinates
+   */
+  final Float32List charU0 = new Float32List(256);
+
+  /**
+   * Array of bottom right U texture coordinates
+   */
+  final Float32List charU1 = new Float32List(256);
+
+  /**
+   * Array of top left V texture coordinates
+   */
+  final Float32List charV0 = new Float32List(256);
+
+  /**
+   * Array of bottom right V texture coordinates
+   */
+  final Float32List charV1 = new Float32List(256);
+
+  /**
+   * Amount of empty space to add between each text character
+   */
   double xSpacing = 0.0;
 
+  /**
+   * Texture containing font characters
+   */
   Texture _tex;
 
+  Future<FontRenderer> _onLoad;
+
+  /**
+   * Loads a font using data in a JSON file at [url].
+   *
+   * Below is a sample JSON file for a rather useless font that includes
+   * only the letter 'A', and uses the entire texture for it.
+   *
+   *     {
+   *       "textureUrl": "res/font/uselessfont.png",
+   *       "size": 7,
+   *       "xSpacing": 1
+   *       "chars": [
+   *         {
+   *           "charCode": 65,
+   *           "width": 5,
+   *           "height": 7,
+   *           "u0": 0.0,
+   *           "v0": 0.0,
+   *           "u1": 1.0,
+   *           "v1": 1.0
+   *         }
+   *       ]
+   *     }
+   */
   FontRenderer(String url, WebGL.RenderingContext gl) {
+    Completer<FontRenderer> comp = new Completer();
+    _onLoad = comp.future;
     HttpRequest.getString(url).then((text) {
       var fontInfo = JSON.decode(text);
       _tex = new Texture.load(fontInfo["textureUrl"], gl);
@@ -32,6 +103,9 @@ class FontRenderer {
         charU1[code] = obj["u1"];
         charV1[code] = obj["v1"];
       }
+      _tex.onLoad.then((_) {
+        comp.complete(this);
+      });
     });
   }
 
@@ -52,7 +126,9 @@ class FontRenderer {
       charWidths[i] = charWidth.toDouble();
       charHeights[i] = charHeight.toDouble();
     }
-
+    _tex = tex;
+    Completer comp = new Completer();
+    _onLoad = comp.future;
     tex.onLoad.then((evt) {
       double cwidth = charWidth / tex.width;
       double cheight = charHeight / tex.height;
@@ -67,8 +143,8 @@ class FontRenderer {
         charU1[i] = charU0[i] + cwidth;
         charV1[i] = charV0[i] + cheight;
       }
+      comp.complete(this);
     });
-    _tex = tex;
   }
 
   /**
@@ -108,7 +184,15 @@ AB1AOTqANQBAAAQACIAAANABlKMDWAMABEAAgAAIAOAZ+AOg2b+6t+iJHQAAAABJRU5ErkJggg==
     return new FontRenderer.mono(tex, gl, 5, 7, 6, 8);
   }
 
+  /**
+   * Generates a font at runtime with the Canvas 2D context. [font] defines
+   * the name of the font (don't include size in it). [size] is the size
+   * of the font in pixels. For example, using a font of Arial and a size
+   * of 32 will create the font from "32px Arial". Only generates
+   * characters 0 - 127
+   */
   FontRenderer.generate(String font, this.size, WebGL.RenderingContext gl) {
+    _onLoad = new Future.value(this);
     var canvas = new CanvasElement();
     CanvasRenderingContext2D ctx = canvas.getContext("2d");
     ctx.font = "$size\px $font";
@@ -164,6 +248,9 @@ AB1AOTqANQBAAAQACIAAANABlKMDWAMABEAAgAAIAOAZ+AOg2b+6t+iJHQAAAABJRU5ErkJggg==
     _tex = new Texture(canvas, gl, minFilter: WebGL.LINEAR_MIPMAP_LINEAR, magFilter: WebGL.LINEAR, mipmap: true);
   }
 
+  /**
+   * Gets the width of the string in pixels multiplied by the current scale
+   */
   double getWidth(String str) {
     double w = 0.0;
     for (final code in str.codeUnits) {
@@ -172,10 +259,18 @@ AB1AOTqANQBAAAQACIAAANABlKMDWAMABEAAgAAIAOAZ+AOg2b+6t+iJHQAAAABJRU5ErkJggg==
     return (w + xSpacing * str.length) * scale;
   }
 
-  double getHeight() {
-    return size * scale;
-  }
+  /**
+   * The size of the font multiplied by the scale
+   */
+  double get height => size * scale;
 
+  Future<FontRenderer> get onLoad => _onLoad;
+
+  /**
+   * Draws [str] at ([x], [y]) using [batch]. This should be used after [batch.begin]
+   * has been called. Drawing multiples strings in a row will therefor
+   * only result in one draw call if used with one batch.
+   */
   void drawString(SpriteBatch batch, String str, double x, double y) {
     for (final code in str.codeUnits) {
       if (code >= 256) {
@@ -186,6 +281,10 @@ AB1AOTqANQBAAAQACIAAANABlKMDWAMABEAAgAAIAOAZ+AOg2b+6t+iJHQAAAABJRU5ErkJggg==
     }
   }
 
+  /**
+   * Draws [str] using [batch], centering it at ([x], [y]). See
+   * [drawString] for more details.
+   */
   void drawStringCentered(SpriteBatch batch, String str, double x, double y) {
     int w = (getWidth(str) * 0.5).floor();
     drawString(batch, str, x - w, y);

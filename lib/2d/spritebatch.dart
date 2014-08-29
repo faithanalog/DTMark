@@ -1,6 +1,13 @@
 part of dtmark;
 
 //TODO: Add Z index (make it a vert attrib) so that things don't have to be painter's algorithim. good idea? maybe...
+/**
+ * A sprite batcher than will queue up sprites and draw them all in one draw
+ * call. Not as effecient as pre-loading vertices to a buffer object,
+ * but better than doing one draw call per sprite. This is convenient for
+ * drawing anything that moves on the screen, or something dynamic like text,
+ * but it may be ineffecient for static data like tiles in a tile based game.
+ */
 class SpriteBatch {
 
   //Max 65536 verts before flush
