@@ -271,9 +271,9 @@ class SpriteBatch {
    * The current projection matrix. Setting this will not affect anything
    * until the next time [begin] is called.
    *
-   *     [projection] = null;
+   *     projection = null;
    * is equivelant to
-   *     [projection] = new Matrix4.identity();
+   *     projection = new Matrix4.identity();
    */
   Matrix4 get projection => _projection;
 
@@ -281,9 +281,9 @@ class SpriteBatch {
    * The current modelView matrix. Setting this will not affect anything
    * until the next time [begin] is called.
    *
-   *     [modelView] = null;
+   *     modelView = null;
    * is equivelant to
-   *     [modelView] = new Matrix4.identity();
+   *     modelView = new Matrix4.identity();
    */
   Matrix4 get modelView => _modelView;
 
