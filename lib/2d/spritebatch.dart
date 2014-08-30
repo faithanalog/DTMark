@@ -170,7 +170,7 @@ class SpriteBatch {
     if (height == null) {
       height = tex.height.toDouble();
     }
-    _addQuad(x, y + height, 0.0, 0.0, x + width, y, tex.maxU, tex.maxV);
+    _addQuad(x, y + height, 0.0, 0.0, x + width, y, 1.0, 1.0);
   }
 
   /**

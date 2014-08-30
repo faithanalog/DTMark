@@ -1,5 +1,8 @@
 part of dtmark;
 
+/**
+ * Utilities for loading AudioElements, auto-selecting filetype based on browser capabilitites.
+ */
 class AudioStreaming {
   /**
    * Loads the audio element from path, selecting the first supported type in
@@ -27,14 +30,14 @@ class AudioStreaming {
     elem.load();
     return elem;
   }
-  
+
   /**
    * Loads the audio element from path, selecting the first supported type in
    * order of mp3, ogg and wav. the [path] should not include a file extension.
    * Settings [mp3], [ogg], or [wav] will cause the loader to skip that file type.
    * Once the audio is loaded, it will play it.
    */
-  static  AudioElement loadAndPlayAudio(String path, {bool mp3: true, bool ogg: true, bool wav: true}) {
+  static AudioElement loadAndPlayAudio(String path, {bool mp3: true, bool ogg: true, bool wav: true}) {
     var elem = loadAudio(path, mp3: mp3, ogg: ogg, wav: wav);
     elem.onLoadStart.first.then((evt) {
       elem.play();

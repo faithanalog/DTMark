@@ -21,22 +21,44 @@ class AudioEngine {
 
 }
 
+/**
+ * Base interface for audio classes
+ */
 abstract class PlayableAudio {
+
+  /**
+   * The AudioEngine associated with this audio clip
+   */
   AudioEngine engine;
 
   PlayableAudio(this.engine);
 
+  /**
+   * Creates an AudioSourceNode from this audio clip
+   */
   WebAudio.AudioSourceNode createSource();
 
   Future<PlayableAudio> get onLoad => new Future.value(this);
 
+  /**
+   * Creates an AudioSourceNode from this audio clip and begins playing it.
+   */
   WebAudio.AudioSourceNode play();
 
+  /**
+   * Creates an AudioSourceNode from this audio clip and begins playing and looping it
+   */
   WebAudio.AudioSourceNode playLooping();
 }
 
+/**
+ * Audio source that is streamed in while playing using AudioElement instead of being preloaded.
+ */
 class AudioStream extends PlayableAudio {
 
+  /**
+   * HTML AudioElement which is the source of the audio data
+   */
   AudioElement elem;
   Completer<PlayableAudio> _loadCompleter = new Completer();
 
@@ -82,8 +104,15 @@ class AudioStream extends PlayableAudio {
   Future<PlayableAudio> get onLoad => _loadCompleter.future;
 }
 
+/**
+ * Audio source which is fully loaded before playing. Audio data is stored
+ * in a WebAudio AudioBuffer.
+ */
 class Sound extends PlayableAudio {
 
+  /**
+   * AudioBuffer which is the source of the audio data
+   */
   WebAudio.AudioBuffer buffer;
   Completer<PlayableAudio> _loadCompleter = new Completer();
 

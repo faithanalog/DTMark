@@ -1,22 +1,50 @@
 part of dtmark;
 
+/**
+ * Basic ShaderProgram wrapper that makes WebGL shaders a bit easier to deal with.
+ */
 class Shader {
 
+  /**
+   * The WebGL shader program object
+   */
   WebGL.Program program;
+
+  /**
+   * The vertex shader of the program
+   */
   WebGL.Shader vertShader;
+
+  /**
+   * The fragment shader of the program
+   */
   WebGL.Shader fragShader;
+
+  /**
+   * WebGL context associated with this shader
+   */
   WebGL.RenderingContext gl;
 
-  Map<String, WebGL.UniformLocation> uniformMap = new Map();
+  /**
+   * A map of uniform identifiers to WebGL UniformLocations
+   */
+  final Map<String, WebGL.UniformLocation> uniformMap = new Map();
 
-  Shader(String vertSrc, String fragSrc, this.gl) {
+  /**
+   * Creates a new shader program from the shader sources provided in [vertSrc]
+   * and [fragSrc]. If any error results from compiling these shaders, it will
+   * be printed out to the logs. If [shaderName] is provided, it will
+   * be printed at the start of the error logs for easier identification
+   * of which shader had an error.
+   */
+  Shader(String vertSrc, String fragSrc, this.gl, [shaderName = ""]) {
     vertShader = gl.createShader(WebGL.VERTEX_SHADER);
     gl.shaderSource(vertShader, vertSrc);
     gl.compileShader(vertShader);
 
     String log = gl.getShaderInfoLog(vertShader);
     if (log.isNotEmpty) {
-      print("VERTEX ERR:\n" + log);
+      print("VERTEX ERR in shader $shaderName:\n" + log);
     }
 
     fragShader = gl.createShader(WebGL.FRAGMENT_SHADER);
@@ -25,7 +53,7 @@ class Shader {
 
     log = gl.getShaderInfoLog(fragShader);
     if (log.isNotEmpty) {
-      print("FRAGMENT ERR:\n" + log);
+      print("FRAGMENT ERR in shader $shaderName:\n" + log);
     }
 
     program = gl.createProgram();
@@ -34,6 +62,11 @@ class Shader {
     gl.linkProgram(program);
   }
 
+  /**
+   * Gets the UniformLocation of a uniform. This will return uniform location cache
+   * if [name] has a value associated with it, otherwise it will query WebGL
+   * and cache the result.
+   */
   WebGL.UniformLocation getUniformLoc(String name) {
     if (uniformMap.containsKey(name)) {
       return uniformMap[name];
@@ -44,9 +77,23 @@ class Shader {
     }
   }
 
+  /**
+   * Binds the vertex attribute with identifier of [name] to attrib array [index].
+   * Make sure to call [link] after calling this or the changes will
+   * not go into effect.
+   */
   void bindAttribLocation(int index, String name) => gl.bindAttribLocation(program, index, name);
 
+  /**
+   * Convenience function for gl.useProgram(this.program);
+   *
+   * Call before rendering with this shader.
+   */
   void use() => gl.useProgram(program);
+
+  /*
+   * Re-links this shader program and clears the uniform location map
+   */
   void link() {
     gl.linkProgram(program);
     uniformMap.clear();
