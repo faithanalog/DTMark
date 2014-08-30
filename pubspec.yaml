@@ -1,6 +1,6 @@
 name: dtmark
 version: 0.7.0
-author: "unknownloner unknownloner.online@gmail.com"
+author: "unknownloner <unknownloner.online@gmail.com>"
 description: Basic game library
 homepage: "https://github.com/unknownloner/DTMark"
 dependencies:
