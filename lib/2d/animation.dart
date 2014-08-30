@@ -16,16 +16,6 @@ class SpriteAnimation {
   int height;
 
   /**
-   * Padding in pixels between frames on the X axis
-   */
-  int padX;
-
-  /**
-   * Padding in pixels between frames on the Y axis
-   */
-  int padY;
-
-  /**
    * The amount of time in milliseconds that a frame is displayed
    */
   int frameDuration;
@@ -36,11 +26,6 @@ class SpriteAnimation {
   int numFrames;
 
   /**
-   * Starting frame of the animation
-   */
-  int startFrame;
-
-  /**
    * Whether or not the animation will loop when it completes
    */
   bool loop;
@@ -49,6 +34,16 @@ class SpriteAnimation {
    * Texture containing all frames of the animation
    */
   Texture animationFrames;
+
+  /**
+   * Texture regions for the frames used in the animation.
+   */
+  List<TextureRegion> frames;
+
+  /**
+   * Returned for the current frame if the current frame is null (texture still loading)
+   */
+  TextureRegion _blankFrame;
 
   //When the animation was started
   int _animStart = 0;
@@ -71,19 +66,26 @@ class SpriteAnimation {
    */
   SpriteAnimation(this.width, this.height, this.frameDuration, this.numFrames, this.animationFrames,
     {int startFrame: 0, int padX: 0, int padY: 0, bool loop: true}) {
-      this.startFrame = startFrame;
-      this.padX = padX;
-      this.padY = padY;
+      frames = new List(numFrames);
+      _blankFrame = new TextureRegion(animationFrames, 0, 0, width, height);
+      animationFrames.onLoad.then((_) {
+        for (int i = 0; i < numFrames; i++) {
+          int cellW = width + padX, cellH = height + padX;
+          int frm = i + startFrame;
+          int frmX = frm % ((animationFrames.width + padX) ~/ cellW) * cellW;
+          int frmY = frm ~/ ((animationFrames.width + padX) ~/ cellW) * cellH;
+          frames[i] = new TextureRegion(animationFrames, frmX, frmY, width, height);
+        }
+      });
       this.loop = loop;
-
-      _savedFrame = startFrame;
+      _savedFrame = 0;
     }
 
   /**
    * Starts or resumes the animation
    */
   void play() {
-    _animStart = BaseGame.frameTime - ((_savedFrame - startFrame) * frameDuration);
+    _animStart = BaseGame.frameTime - (_savedFrame * frameDuration);
     _savedFrame = 0;
     _playing = true;
   }
@@ -98,11 +100,19 @@ class SpriteAnimation {
   }
 
   /**
-   * Resets the animation to the first frame
+   * Resets the animation to the first frame and stops the animation
    */
   void stop() {
-    _savedFrame = startFrame;
+    _savedFrame = 0;
     _playing = false;
+  }
+
+  /**
+   * Restarts the animation at frame 0
+   */
+  void restart() {
+    stop();
+    play();
   }
 
   /**
@@ -110,7 +120,7 @@ class SpriteAnimation {
    * the animation to the first frame, call setFrame(0).
    */
   void setFrame(int frame) {
-    _savedFrame = frame + startFrame;
+    _savedFrame = frame;
     if (_playing) {
       play(); //Fix up the _animStart time
     }
@@ -127,63 +137,22 @@ class SpriteAnimation {
       int duration = numFrames * frameDuration;
       int frame;
       if (loop) {
-        frame = (numFrames * (time % duration)) ~/ duration + startFrame;
+        frame = (numFrames * (time % duration)) ~/ duration;
       } else {
-        frame = Math.min(startFrame + numFrames - 1, (numFrames * time) ~/ duration + startFrame);
+        frame = Math.min(numFrames - 1, (numFrames * time) ~/ duration);
       }
       return frame;
     }
   }
 
   /**
-   * X coordinate of the current frame in the frame texture
+   * Current texture region of the animation
    */
-  int get frameX {
-    int curFrame = this.frame;
-    int cellWidth = width + padX;
-    //padX is added to the texture width because the padding is included
-    //in the cell width, but the padding should not exist at the border of the texture.
-    return curFrame % ((animationFrames.width + padX) ~/ cellWidth) * cellWidth;
+  TextureRegion get texRegion {
+    TextureRegion frm = frames[frame];
+    if (frm == null) {
+      return _blankFrame;
+    }
+    return frames[frame];
   }
-
-  /**
-   * Y coordinate of the current frame in the frame texture
-   */
-  int get frameY {
-    int curFrame = this.frame;
-    int cellWidth = width + padX;
-    int cellHeight = height + padY;
-    //padX is added to the texture width because the padding is included
-    //in the cell width, but the padding should not exist at the border of the texture.
-    return curFrame ~/ ((animationFrames.width + padX) ~/ cellWidth) * cellHeight;
-  }
-
-  /**
-   * The U texture coordinate of the top left corner of the current frame.
-   */
-  double get frameU {
-    return frameX / animationFrames.width;
-  }
-
-  /**
-   * The V texture coordinate of the top left corner of the current frame.
-   */
-  double get frameV {
-    return frameY / animationFrames.height;
-  }
-
-  /**
-   * The width of the sprite in texture coordinates.
-   */
-  double get uvWidth {
-    return width / animationFrames.width;
-  }
-
-  /**
-   * The height of the sprite in texture coordinates.
-   */
-  double get uvHeight {
-    return height / animationFrames.height;
-  }
-
 }

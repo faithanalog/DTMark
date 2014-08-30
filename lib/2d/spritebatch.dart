@@ -226,13 +226,7 @@ class SpriteBatch {
    * are ([width], [height]), or the dimensions of [anim] if size is not specified.
    */
   void drawAnimation(SpriteAnimation anim, double x, double y, [double width, double height]) {
-    if (width == null) {
-      width = anim.width.toDouble();
-    }
-    if (height == null) {
-      height = anim.height.toDouble();
-    }
-    drawTexRegion(anim.animationFrames, x, y, width, height, anim.frameX, anim.frameY, anim.width, anim.height);
+    drawRegion(anim.texRegion, x, y, width, height);
   }
 
   set projection(Matrix4 proj) {

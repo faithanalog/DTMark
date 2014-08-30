@@ -262,7 +262,44 @@ class TextureRegion {
    */
   TextureRegion(this.texture, this.x, this.y, this.width, this.height);
 
+  /**
+   * x + width
+   */
   int get maxX => x + width;
+
+  /**
+   * y + height
+   */
   int get maxY => y + height;
+
+  /**
+   * U coordinate of the top left corner
+   */
+  double get minU => x / texture.width;
+
+  /**
+   * V coordiante of the top left corner
+   */
+  double get minV => y / texture.height;
+
+  /**
+   * U coordinate of the bottom right corner
+   */
+  double get maxU => maxX / texture.width;
+
+  /**
+   * V coordinate of the bottom right corner
+   */
+  double get maxV => maxY / texture.height;
+
+  /**
+   * Width of the TextureRegion in UV coordinates
+   */
+  double get uvWidth => width / texture.width;
+
+  /**
+   * Height of the TextureRegion in UV coordinates
+   */
+  double get uvHeight => height / texture.height;
 
 }
