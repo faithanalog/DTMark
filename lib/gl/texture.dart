@@ -21,8 +21,8 @@ class Texture {
   /**
    * Loads a texture from the provided data
    *
-   * minFilter and magFilter default to WebGL.NEAREST. wrapS and wrapT
-   * default to WebGL.CLAMP_TO_EDGE
+   * minFilter and magFilter default to `WebGL.NEAREST`. wrapS and wrapT
+   * default to `WebGL.CLAMP_TO_EDGE`
    */
   Texture(CanvasImageSource data, this.gl, {int minFilter: WebGL.NEAREST, int magFilter: WebGL.NEAREST,
     int wrapS: WebGL.CLAMP_TO_EDGE, int wrapT: WebGL.CLAMP_TO_EDGE, bool mipmap: false}) {
@@ -41,8 +41,8 @@ class Texture {
   /**
    * Loads a texture from the image at [url].
    *
-   * minFilter and magFilter default to WebGL.NEAREST. wrapS and wrapT
-   * default to WebGL.CLAMP_TO_EDGE
+   * minFilter and magFilter default to `WebGL.NEAREST`. wrapS and wrapT
+   * default to `WebGL.CLAMP_TO_EDGE`
    */
   factory Texture.load(String url, WebGL.RenderingContext gl, {int minFilter: WebGL.NEAREST, int magFilter: WebGL.NEAREST,
     int wrapS: WebGL.CLAMP_TO_EDGE, int wrapT: WebGL.CLAMP_TO_EDGE, bool mipmap: false}) {
@@ -65,8 +65,8 @@ class Texture {
    * [generate] which will be called with a 2d context used to draw the
    * source image data of the texture.
    *
-   * minFilter and magFilter default to WebGL.NEAREST. wrapS and wrapT
-   * default to WebGL.CLAMP_TO_EDGE
+   * minFilter and magFilter default to `WebGL.NEAREST`. wrapS and wrapT
+   * default to `WebGL.CLAMP_TO_EDGE`
    */
   factory Texture.generate(WebGL.RenderingContext gl, int width, int height, void generate(CanvasRenderingContext2D ctx, int width, int height),
     {int minFilter: WebGL.NEAREST, int magFilter: WebGL.NEAREST, int wrapS: WebGL.CLAMP_TO_EDGE,
@@ -183,12 +183,12 @@ class Texture {
    *
    * This may be set to:
 
-   * * WebGL.NEAREST
-   * * WebGL.NEAREST_MIPMAP_NEAREST
-   * * WebGL.NEAREST_MIPMAP_LINEAR
-   * * WebGL.LINEAR
-   * * WebGL.LINEAR_MIPMAP_LINEAR
-   * * WebGL.LINEAR_MIPMAP_LINEAR
+   * * `WebGL.NEAREST`
+   * * `WebGL.NEAREST_MIPMAP_NEAREST`
+   * * `WebGL.NEAREST_MIPMAP_LINEAR`
+   * * `WebGL.LINEAR`
+   * * `WebGL.LINEAR_MIPMAP_LINEAR`
+   * * `WebGL.LINEAR_MIPMAP_LINEAR`
    */
   int get minFilter => _minFilter;
 
@@ -196,10 +196,10 @@ class Texture {
    * Filter used when displaying the texture at larger sizes than its normal size.
    * Setting this will not affect the texture until the next time [bind] is called.
    *
-   * This map be set to:
+   * This may be set to:
 
-   * * WebGL.NEAREST
-   * * WebGL.LINEAR
+   * * `WebGL.NEAREST`
+   * * `WebGL.LINEAR`
    */
   int get magFilter => _magFilter;
 
@@ -207,20 +207,20 @@ class Texture {
   /**
    * Texture wrapping rule on X axis
    *
-   * This map be set to:
+   * This may be set to:
 
-   * * WebGL.REPEAT
-   * * WebGL.CLAMP_TO_EDGE
+   * * `WebGL.REPEAT`
+   * * `WebGL.CLAMP_TO_EDGE`
    */
   int get wrapS => _wrapS;
 
   /**
    * Texture wrapping rule on Y axis
    *
-   * This map be set to:
+   * This may be set to:
 
-   * * WebGL.REPEAT
-   * * WebGL.CLAMP_TO_EDGE
+   * * `WebGL.REPEAT`
+   * * `WebGL.CLAMP_TO_EDGE`
    */
    int get wrapT => _wrapT;
 
