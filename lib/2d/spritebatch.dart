@@ -32,19 +32,19 @@ class SpriteBatch {
   /**
    * WebGL buffer used for vertices
    */
-  final WebGL.Buffer buffer;
+  WebGL.Buffer _buffer;
 
   /**
    * WebGL buffer used for indices
    */
-  final WebGL.Buffer indices;
+  WebGL.Buffer _indices;
 
   Shader _shader;
 
   /**
    * A 1x1 pixel texture which is white. Used for rendering solid blocks of color
    */
-  final Texture whiteTex;
+  Texture _whiteTex;
   Texture _lastTex = null;
 
   /**
@@ -76,7 +76,7 @@ class SpriteBatch {
    */
   SpriteBatch(this.gl, {int width: 1, int height: 1}) {
     _shader = getBatchShader(gl);
-    buffer = gl.createBuffer();
+    _buffer = gl.createBuffer();
 
     //Generate indices
     var indData = new Uint16List(6 * BATCH_MAX_VERTS ~/ 4);
@@ -90,18 +90,18 @@ class SpriteBatch {
       indData[i + 5] = index;
       index += 4;
     }
-    indices = gl.createBuffer();
-    gl.bindBuffer(WebGL.ELEMENT_ARRAY_BUFFER, indices);
+    _indices = gl.createBuffer();
+    gl.bindBuffer(WebGL.ELEMENT_ARRAY_BUFFER, _indices);
     gl.bufferDataTyped(WebGL.ELEMENT_ARRAY_BUFFER, indData, WebGL.STATIC_DRAW);
     gl.bindBuffer(WebGL.ELEMENT_ARRAY_BUFFER, null);
 
 
-    whiteTex = new Texture(null, gl);
+    _whiteTex = new Texture(null, gl);
     gl.texImage2DTyped(WebGL.TEXTURE_2D, 0, WebGL.RGBA, 1, 1, 0, WebGL.RGBA, WebGL.UNSIGNED_BYTE, new Uint8List.fromList([255, 255, 255, 255]));
 
     _projection = makeOrthographicMatrix(0, width, 0, height, -1, 1);
     _modelView = new Matrix4.identity();
-    _lastTex = whiteTex;
+    _lastTex = _whiteTex;
   }
 
   /**
@@ -155,7 +155,7 @@ class SpriteBatch {
    * Fills a rectangle with the current color
    */
   void fillRect(double x, double y, double width, double height) {
-    drawTexture(whiteTex, x, y, width, height);
+    drawTexture(_whiteTex, x, y, width, height);
   }
 
   /**
@@ -185,7 +185,7 @@ class SpriteBatch {
     if (height == null) {
       height = texRegion.height.toDouble();
     }
-    drawTexRegion(texRegion.texture, x, y, width, height, texRegion.x, texRegion.y, tex.width, tex.height);
+    drawTexRegion(texRegion.texture, x, y, width, height, texRegion.x, texRegion.y, texRegion.width, texRegion.height);
   }
 
   /**
@@ -304,8 +304,8 @@ class SpriteBatch {
     gl.enableVertexAttribArray(1);
     gl.enableVertexAttribArray(2);
 
-    gl.bindBuffer(WebGL.ARRAY_BUFFER, buffer);
-    gl.bindBuffer(WebGL.ELEMENT_ARRAY_BUFFER, indices);
+    gl.bindBuffer(WebGL.ARRAY_BUFFER, _buffer);
+    gl.bindBuffer(WebGL.ELEMENT_ARRAY_BUFFER, _indices);
     gl.vertexAttribPointer(0, 2, WebGL.FLOAT, false, 32, 0);
     gl.vertexAttribPointer(1, 2, WebGL.FLOAT, false, 32, 8);
     gl.vertexAttribPointer(2, 4, WebGL.FLOAT, false, 32, 16);

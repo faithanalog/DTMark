@@ -37,7 +37,7 @@ class Button extends TextComponent {
     }
     batch.fillRect(1.0, 1.0, width.toDouble() - 2, height.toDouble() - 2);
     batch.color.setValues(0.0, 0.0, 0.0, 1.0);
-    font.drawStringCentered(batch, text, (width >> 1).toDouble(), ((height - font.height / 2).floorToDouble());
+    font.drawStringCentered(batch, text, (width >> 1).toDouble(), ((height - font.height) / 2).floorToDouble());
     batch.end();
   }
 
