@@ -4,6 +4,9 @@ part of dtmark;
  * TODO: Render font (and ui elements too maybe?) with distance field shaders
  */
 
+/**
+ * Generic alignment constants used in UI code
+ */
 class Align {
 
   static const Align LEFT = const Align(0);
@@ -18,22 +21,72 @@ class Align {
 
 }
 
+/**
+ * Sets up the UI system to work with the rendering context.
+ * Currently only creates a font for Component.defaultFont
+ */
 void initUISystem(WebGL.RenderingContext gl) {
   Component.defaultFont = new FontRenderer.lowResMono(gl);
 }
 
+/**
+ * Base class for all UI components
+ */
 abstract class Component {
 
+  /**
+   * Default font used by any component rendering text
+   */
   static FontRenderer defaultFont;
+
+  /**
+   * Default horizontal alignment for new components
+   */
   static Align defaultHAlign = Align.LEFT;
+
+  /**
+   * Default vertical alignment for new components
+   */
   static Align defaultVAlign = Align.BOTTOM;
 
-  int offX = 0, offY = 0, width = 0, height = 0;
+  /**
+   * X offset of component from its normal position
+   */
+  int offX = 0;
+
+  /**
+   * Y offset of component from its normal position
+   */
+  int offY = 0;
+
+  /**
+   * Current width
+   */
+  int width = 0;
+
+  /**
+   * Current height
+   */
+  int height = 0;
+
+  /**
+   * Current horizontal alignment
+   */
   Align halign = defaultHAlign;
+
+  /**
+   * Current vertical alignment
+   */
   Align valign = defaultVAlign;
 
+  /**
+   * Current font used when rendering text
+   */
   FontRenderer font = defaultFont;
 
+  /**
+   * Parent container if any. Only RootPanel or new components have no parent.
+   */
   Container _parent = null;
 
   StreamController<MouseDownEvent> _mouseDownController = new StreamController();
@@ -42,13 +95,39 @@ abstract class Component {
   StreamController<KeyDownEvent> _keyDownController = new StreamController();
   StreamController<KeyUpEvent> _keyUpController = new StreamController();
 
+  /**
+   * Stream of mouseDown events
+   */
   Stream<MouseDownEvent> get onMouseDown => _mouseDownController.stream;
+
+  /**
+   * Stream of mouseUp events
+   */
   Stream<MouseUpEvent> get onMouseUp => _mouseUpController.stream;
+
+  /**
+   * Stream of mouseMove events
+   */
   Stream<MouseMoveEvent> get onMouseMove => _mouseMoveController.stream;
+
+  /**
+   * Stream of keyDown events
+   */
   Stream<KeyDownEvent> get onKeyDown => _keyDownController.stream;
+
+  /**
+   * Stream of keyUp events
+   */
   Stream<KeyUpEvent> get onKeyUp => _keyUpController.stream;
+
+  /**
+   * Parent container of this component
+   */
   Container get parent => _parent;
 
+  /**
+   * X position of this component relative to parent
+   */
   int get x {
     switch(halign) {
       case Align.LEFT:
@@ -62,6 +141,9 @@ abstract class Component {
     }
   }
 
+  /**
+   * Y position of this component relative to parent
+   */
   int get y {
     switch(valign) {
       case Align.TOP:
@@ -75,10 +157,16 @@ abstract class Component {
     }
   }
 
+  /**
+   * Mouse X position relative to this component
+   */
   int get mouseX {
     return _parent.mouseX - x;
   }
 
+  /**
+   * Mouse Y position relative to this component
+   */
   int get mouseY {
     return _parent.mouseY - y;
   }
@@ -91,32 +179,52 @@ abstract class Component {
   void _keyUp(KeyUpEvent evt) => _keyUpController.add(evt);
 
   /**
-   * Checks if the point is within the component. [x] and [y] should be
-   * relative to the location of the component, such that (0, 0) is the
-   * bottom left corner of the component.
+   * Checks if the point is within this component. [x] and [y] should be
+   * relative to the location of this component, such that (0, 0) is the
+   * bottom left corner of this component.
    */
   bool containsPoint(int x, int y) {
     return x >= 0 && x < width && y >= 0 && y < height;
   }
 
+  /**
+   * Checks if the mouse is within the bounds of this component
+   */
   bool containsMouse() {
     return containsPoint(mouseX, mouseY);
   }
 
+  /**
+   * Renders this component with the given sprite batch
+   */
   void render(SpriteBatch batch);
 
 }
 
+/**
+ * Container component which can contain children. The positions
+ * of child components are relative to their parent Container.
+ */
 class Container extends Component {
 
   final Set<Component> _children = new Set();
+
+  /**
+   * Currently focused component which will receive key events
+   */
   Component focus = null;
 
+  /**
+   * Adds a new child component to this Container
+   */
   void add(Component child) {
     child._parent = this;
     _children.add(child);
   }
 
+  /**
+   * Adds multiple child components at once
+   */
   void addAll(Iterable<Component> children) {
     for (final child in children) {
       child._parent = this;
@@ -124,11 +232,17 @@ class Container extends Component {
     _children.addAll(children);
   }
 
+  /**
+   * Remove a child component from this Container
+   */
   void remove(Component child) {
     child._parent = null;
     _children.remove(child);
   }
 
+  /**
+   * Remove multiple child components at once
+   */
   void removeAll(Iterable<Component> children) {
     for (final child in children) {
       child._parent = null;
@@ -188,6 +302,9 @@ class Container extends Component {
     }
   }
 
+  /**
+   * Render all children of this Container
+   */
   @override
   void render(SpriteBatch batch) {
     for (final child in _children) {
@@ -199,14 +316,32 @@ class Container extends Component {
   }
 }
 
+/**
+ * The root panel of the UI system. RootPanels do not have
+ * a parent and instead receive events from a BaseGame
+ */
 class RootPanel extends Container {
 
+  /**
+   * If false, will ignore all input events
+   */
   bool active = false;
+
+  /**
+   * SpriteBatch used when rendering child components
+   */
   SpriteBatch batch;
 
+  /**
+   * BaseGame associated with this RootPanel
+   */
   BaseGame game;
 
   int _mouseX = -1, _mouseY = -1;
+
+  /**
+   * Scale of the UI relative to the game canvas width and height
+   */
   double scale = 1.0;
 
   RootPanel(this.game) {
@@ -246,6 +381,9 @@ class RootPanel extends Container {
     });
   }
 
+  /**
+   * Renders the UI
+   */
   void renderAll() {
     batch.projection = makeOrthographicMatrix(0, game.canvas.width / scale, 0, game.canvas.height / scale, -1, 1);
     render(batch);
@@ -271,6 +409,9 @@ class RootPanel extends Container {
 
 }
 
+/**
+ * Base class for components which contain a String to render
+ */
 abstract class TextComponent extends Component {
 
   String text;

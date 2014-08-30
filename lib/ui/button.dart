@@ -1,11 +1,17 @@
 part of dtmark;
 
+/**
+ * Clickable button component
+ */
 class Button extends TextComponent {
 
   StreamController<ButtonClickEvent> _clickController = new StreamController();
   bool _clicked = false;
 
 
+  /**
+   * Creates a button with a label of [text]
+   */
   Button([String text = ""]) {
     fontSize = 16;
     height = fontSize + 6;
@@ -56,10 +62,17 @@ class Button extends TextComponent {
     }
   }
 
+  /**
+   * Stream of button click events. Click events are fired
+   * on mouse button up, not mouse button down.
+   */
   Stream<ButtonClickEvent> get onClick => _clickController.stream;
 
 }
 
+/**
+ * Event fired when a button is clicked
+ */
 class ButtonClickEvent extends UIEvent {
 
   ButtonClickEvent(Component src): super(src);
