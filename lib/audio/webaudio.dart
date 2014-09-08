@@ -1,5 +1,8 @@
 part of dtmark;
 
+/**
+ * Wrapper around a WebAudio AudioContext which is used by DTMark audio classes.
+ */
 class AudioEngine {
 
   WebAudio.AudioContext ctx;
@@ -18,6 +21,22 @@ class AudioEngine {
   set volume(double vol) => _gain.gain.value = vol;
 
   double get volume => _gain.gain.value;
+
+  static bool _webAudioSupport = null;
+  /**
+   * Whether or not the browser supports WebAudio. Applications should
+   * gracefully handle a lack of WebAudio support by not playing
+   * audio, instead of simply crashing. However, it is likely
+   * that any browser supporting WebGL also supports WebAudio.
+   */
+  static bool get webAudioSupport {
+    if (_webAudioSupport == null) {
+      var jswindow = new JsObject.fromBrowserObject(window);
+      _webAudioSupport = jswindow.hasProperty("AudioContext") ||
+        jswindow.hasProperty("webkitAudioContext");
+    }
+    return _webAudioSupport;
+  }
 
 }
 
@@ -52,7 +71,8 @@ abstract class PlayableAudio {
 }
 
 /**
- * Audio source that is streamed in while playing using AudioElement instead of being preloaded.
+ * Audio source that is streamed in while playing using AudioElement instead of
+ * being preloaded. This is useful for longer audio clips such as music.
  */
 class AudioStream extends PlayableAudio {
 
