@@ -5,11 +5,14 @@ part of dtmark;
  */
 class Texture {
 
-  WebGL.RenderingContext gl;
-  WebGL.Texture glTex;
+  WebGL.RenderingContext _gl;
+  WebGL.Texture _glTex;
 
-  int _minFilter, _magFilter, _wrapS, _wrapT;
-  bool _mipmap;
+  int _minFilter = WebGL.NEAREST;
+  int _magFilter = WebGL.NEAREST;
+  int _wrapS = WebGL.CLAMP_TO_EDGE;
+  int _wrapT = WebGL.CLAMP_TO_EDGE;
+  bool _mipmap = false;
 
   int _width = 1, _height = 1;
 
@@ -24,14 +27,10 @@ class Texture {
    * minFilter and magFilter default to `WebGL.NEAREST`. wrapS and wrapT
    * default to `WebGL.CLAMP_TO_EDGE`
    */
-  Texture(CanvasImageSource data, this.gl, {int minFilter: WebGL.NEAREST, int magFilter: WebGL.NEAREST,
-    int wrapS: WebGL.CLAMP_TO_EDGE, int wrapT: WebGL.CLAMP_TO_EDGE, bool mipmap: false}) {
-    this._minFilter = minFilter;
-    this._magFilter = magFilter;
-    this._wrapS = wrapS;
-    this._wrapT = wrapT;
-    this._mipmap = mipmap;
-    glTex = gl.createTexture();
+  Texture(CanvasImageSource data, WebGL.RenderingContext gl, {bool mipmap: false}) {
+    _mipmap = mipmap;
+    _gl = gl;
+    _glTex = gl.createTexture();
     gl.bindTexture(WebGL.TEXTURE_2D, glTex);
     uploadData(data);
     _setProperties();
@@ -39,14 +38,30 @@ class Texture {
   }
 
   /**
+   * Creates an empty texture with the given dimensions
+   *
+   * minFilter and magFilter default to `WebGL.NEAREST`. wrapS and wrapT
+   * default to `WebGL.CLAMP_TO_EDGE`
+   */
+   Texture.empty(WebGL.RenderingContext gl, int width, int height, {bool mipmap: false}) {
+     _mipmap = mipmap;
+     _gl = gl;
+     _glTex = gl.createTexture();
+     gl.bindTexture(WebGL.TEXTURE_2D, glTex);
+     setSize(width, height);
+     _setProperties();
+     _onLoad = new Future.value(this);
+   }
+
+
+  /**
    * Loads a texture from the image at [url].
    *
    * minFilter and magFilter default to `WebGL.NEAREST`. wrapS and wrapT
    * default to `WebGL.CLAMP_TO_EDGE`
    */
-  factory Texture.load(String url, WebGL.RenderingContext gl, {int minFilter: WebGL.NEAREST, int magFilter: WebGL.NEAREST,
-    int wrapS: WebGL.CLAMP_TO_EDGE, int wrapT: WebGL.CLAMP_TO_EDGE, bool mipmap: false}) {
-    Texture tex = new Texture(null, gl, minFilter: minFilter, magFilter: magFilter, wrapS: wrapS, wrapT: wrapT, mipmap: mipmap);
+  factory Texture.load(String url, WebGL.RenderingContext gl, {bool mipmap: false}) {
+    Texture tex = new Texture(null, gl, mipmap: mipmap);
     Completer<Texture> loadCompleter = new Completer();
     tex._onLoad = loadCompleter.future;
 
@@ -68,14 +83,13 @@ class Texture {
    * minFilter and magFilter default to `WebGL.NEAREST`. wrapS and wrapT
    * default to `WebGL.CLAMP_TO_EDGE`
    */
-  factory Texture.generate(WebGL.RenderingContext gl, int width, int height, void generate(CanvasRenderingContext2D ctx, int width, int height),
-    {int minFilter: WebGL.NEAREST, int magFilter: WebGL.NEAREST, int wrapS: WebGL.CLAMP_TO_EDGE,
-    int wrapT: WebGL.CLAMP_TO_EDGE, bool mipmap: false}) {
+  factory Texture.generate(WebGL.RenderingContext gl, int width, int height,
+    void generate(CanvasRenderingContext2D ctx, int width, int height), {bool mipmap: false}) {
 
     var elem = new CanvasElement(width: width, height: height);
     var ctx = elem.getContext("2d") as CanvasRenderingContext2D;
     generate(ctx, width, height);
-    return new Texture(elem, gl, minFilter: minFilter, magFilter: magFilter, wrapS: wrapS, wrapT: wrapT, mipmap: mipmap);
+    return new Texture(elem, gl, mipmap: mipmap);
   }
 
   /**
@@ -241,7 +255,15 @@ class Texture {
     */
    int get height => _height;
 
+   /**
+    * Rendering context associated with this texture
+    */
+   WebGL.RenderingContext get gl => _gl;
 
+   /**
+    * Backing WebGL Texture object of this texture
+    */
+   WebGL.Texture get glTex => _glTex;
 }
 
 /**

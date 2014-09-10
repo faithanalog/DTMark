@@ -14,6 +14,7 @@ import 'package:browser_detect/browser_detect.dart' as BrowserDetect;
 //WebGL stuff
 part 'gl/shader.dart';
 part 'gl/texture.dart';
+part 'gl/framebuffer.dart';
 
 //2D stuff
 part '2d/spritebatch.dart';
@@ -23,6 +24,7 @@ part '2d/animation.dart';
 //Audio
 part 'audio/streaming.dart';
 part 'audio/webaudio.dart';
+part 'audio/oscillators.dart';
 
 //UI
 part 'ui/component.dart';

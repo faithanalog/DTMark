@@ -1,3 +1,5 @@
+part of dtmark;
+
 /**
  * An oscillator that plays a waveform at a given frequency
  */

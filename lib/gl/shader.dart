@@ -37,14 +37,15 @@ class Shader {
    * be printed at the start of the error logs for easier identification
    * of which shader had an error.
    */
-  Shader(String vertSrc, String fragSrc, this.gl, [shaderName = ""]) {
+  Shader(String vertSrc, String fragSrc, this.gl, {String name: "",
+      Iterable<AttribLocation> attribLocs: null}) {
     vertShader = gl.createShader(WebGL.VERTEX_SHADER);
     gl.shaderSource(vertShader, vertSrc);
     gl.compileShader(vertShader);
 
     String log = gl.getShaderInfoLog(vertShader);
     if (log.isNotEmpty) {
-      print("VERTEX ERR in shader $shaderName:\n" + log);
+      print("VERTEX ERR in shader $name:\n" + log);
     }
 
     fragShader = gl.createShader(WebGL.FRAGMENT_SHADER);
@@ -53,12 +54,19 @@ class Shader {
 
     log = gl.getShaderInfoLog(fragShader);
     if (log.isNotEmpty) {
-      print("FRAGMENT ERR in shader $shaderName:\n" + log);
+      print("FRAGMENT ERR in shader $name:\n" + log);
     }
 
     program = gl.createProgram();
     gl.attachShader(program, vertShader);
     gl.attachShader(program, fragShader);
+
+    if (attribLocs != null) {
+      for (final loc in attribLocs) {
+        bindAttribLocObj(loc);
+      }
+    }
+
     gl.linkProgram(program);
   }
 
@@ -83,6 +91,10 @@ class Shader {
    * not go into effect.
    */
   void bindAttribLocation(int index, String name) => gl.bindAttribLocation(program, index, name);
+
+  void bindAttribLocObj(AttribLocation loc) {
+    bindAttribLocation(loc.index, loc.name);
+  }
 
   /**
    * Convenience function for gl.useProgram(this.program);
@@ -112,5 +124,15 @@ class Shader {
   void setUniformMatrix2fv(String name, bool transpose, Matrix2 mat) => gl.uniformMatrix2fv(getUniformLoc(name), transpose, mat.storage);
   void setUniformMatrix3fv(String name, bool transpose, Matrix3 mat) => gl.uniformMatrix3fv(getUniformLoc(name), transpose, mat.storage);
   void setUniformMatrix4fv(String name, bool transpose, Matrix4 mat) => gl.uniformMatrix4fv(getUniformLoc(name), transpose, mat.storage);
+
+}
+
+
+class AttribLocation {
+
+  final int index;
+  final String name;
+
+  const AttribLocation(this.index, this.name);
 
 }
