@@ -21,6 +21,11 @@ part '2d/spritebatch.dart';
 part '2d/fontrenderer.dart';
 part '2d/animation.dart';
 
+//3D stuff
+part '3d/geometry.dart';
+part '3d/material.dart';
+part '3d/mesh.dart';
+
 //Audio
 part 'audio/streaming.dart';
 part 'audio/webaudio.dart';
