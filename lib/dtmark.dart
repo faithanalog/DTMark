@@ -24,7 +24,7 @@ part '2d/animation.dart';
 //Audio
 part 'audio/streaming.dart';
 part 'audio/webaudio.dart';
-part 'audio/oscillators.dart';
+part 'audio/oscillator.dart';
 
 //UI
 part 'ui/component.dart';
