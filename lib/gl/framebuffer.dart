@@ -18,7 +18,7 @@ class Framebuffer {
    */
   factory Framebuffer(WebGL.RenderingContext gl, int width, int height, {bool depth: false}) {
     var texture = new Texture.empty(gl, width, height);
-    return new Framebuffer.withTexture(gl, texture, depth: depth);
+    return new Framebuffer.usingTexture(gl, texture, depth: depth);
   }
 
   /**
@@ -32,7 +32,7 @@ class Framebuffer {
     _glFbo = gl.createFramebuffer();
 
     gl.bindFramebuffer(WebGL.FRAMEBUFFER, _glFbo);
-    gl.framebuffferTexture2D(WebGL.FRAMEBUFFER, WebGL.COLOR_ATTACHMENT0, WebGL.TEXTURE_2D, _texture.glTex, 0);
+    gl.framebufferTexture2D(WebGL.FRAMEBUFFER, WebGL.COLOR_ATTACHMENT0, WebGL.TEXTURE_2D, _texture.glTex, 0);
 
     if (depth) {
       _depthBuffer = gl.createRenderbuffer();

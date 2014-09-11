@@ -245,7 +245,9 @@ AB1AOTqANQBAAAQACIAAANABlKMDWAMABEAAgAAIAOAZ+AOg2b+6t+iJHQAAAABJRU5ErkJggg==
       print("${charWidths[cc]} ${charHeights[cc]}");
     }
 
-    _tex = new Texture(canvas, gl, minFilter: WebGL.LINEAR_MIPMAP_LINEAR, magFilter: WebGL.LINEAR, mipmap: true);
+    _tex = new Texture(canvas, gl, mipmap: true);
+    _tex.minFilter = WebGL.LINEAR_MIPMAP_LINEAR;
+    _tex.magFilter = WebGL.LINEAR;
   }
 
   /**

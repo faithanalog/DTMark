@@ -348,11 +348,11 @@ class SpriteBatch {
   static Shader getBatchShader(WebGL.RenderingContext gl) {
     if (_batchShader == null) {
       _batchShader = new Shader(VERT_SHADER, FRAG_SHADER, gl,
-        {name: "SpriteBatch Shader", attribLocs: [
+        name: "SpriteBatch Shader", attribLocs: [
           const AttribLocation(0, "a_position"),
           const AttribLocation(1, "a_texCoord"),
           const AttribLocation(2, "a_color")
-        ]});
+        ]);
     }
     return _batchShader;
   }
