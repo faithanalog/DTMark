@@ -9,7 +9,7 @@ class AudioEngine {
   WebAudio.AudioNode dest;
 
   WebAudio.GainNode _gain;
-  
+
   int _startTime = 0;
 
   AudioEngine() {
@@ -24,9 +24,10 @@ class AudioEngine {
   set volume(double vol) => _gain.gain.value = vol;
 
   double get volume => _gain.gain.value;
-  
+
   /**
-   * Current time of the AudioContext. Useful for specifying 'when' for playing sounds
+   * Current time of the AudioContext in seconds.
+   * Used for specifying 'when' for playing sounds
    */
   double get time => (new DateTime.now().millisecondsSinceEpoch - _startTime) / 1000;
 
@@ -68,12 +69,16 @@ abstract class PlayableAudio {
   Future<PlayableAudio> get onLoad => new Future.value(this);
 
   /**
-   * Creates an AudioSourceNode from this audio clip and begins playing it [delay] seconds later.
+   * Creates an AudioSourceNode from this audio clip and begins playing it.
+   * If [when] is 0, starts playing immediately, otherwise plays at
+   * the time [when] (see [AudioEngine.time]).
    */
   WebAudio.AudioSourceNode play([num when=0]);
 
   /**
-   * Creates an AudioSourceNode from this audio clip and begins playing and looping it [delay] seconds later.
+   * Creates an AudioSourceNode from this audio clip and begins playing and looping it.
+   * If [when] is 0, starts playing immediately, otherwise plays at
+   * the time [when] (see [AudioEngine.time]).
    */
   WebAudio.AudioSourceNode playLooping([num when=0]);
 }
@@ -105,34 +110,28 @@ class AudioStream extends PlayableAudio {
 
   @override
   WebAudio.MediaElementAudioSourceNode play([num when=0]) {
-    var src = createSource();
-    src.connectNode(engine.dest);
-    if (elem.currentTime > 0) {
-      elem.currentTime = 0;
-    }
-    elem.loop = false;
-    if (delay > 0) {
-      new Timer(new Duration(milliseconds: (delay * 1000).toInt()), () {
-        elem.play();
-      });
-    } else {
-      elem.play();
-    }
-    return src;
+    return _playAtTime(false, when);
   }
 
   @override
   WebAudio.MediaElementAudioSourceNode playLooping([num when=0]) {
+    return _playAtTime(true, when);
+  }
+
+  WebAudio.MediaElementAudioSourceNode _playAtTime(bool loop, num when) {
     var src = createSource();
     src.connectNode(engine.dest);
     if (elem.currentTime > 0) {
       elem.currentTime = 0;
     }
-    elem.loop = true;
-    if (delay > 0) {
-      new Timer(new Duration(milliseconds: (delay * 1000).toInt()), () {
-        elem.play();
-      });
+    elem.loop = loop;
+    if (when > 0) {
+      int offs = ((when - engine.time) * 1000).toInt();
+      if (offs > 0) {
+        new Timer(new Duration(milliseconds: offs), () {
+          elem.play();
+        });
+      }
     } else {
       elem.play();
     }

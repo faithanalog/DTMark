@@ -32,21 +32,21 @@ class Oscillator extends PlayableAudio {
   }
 
   @override
-  WebAudio.AudioSourceNode play([num delay=0]) {
+  WebAudio.AudioSourceNode play([num when=0]) {
     var src = createSource();
     src.connectNode(engine.dest);
-    src.start(delay + engine.time);
+    src.start(when);
     if (duration > 0) {
-      src.stop(duration + delay + engine.time);
+      src.stop(when + duration);
     }
     return src;
   }
 
   @override
-  WebAudio.AudioSourceNode playLooping([num delay=0]) {
+  WebAudio.AudioSourceNode playLooping([num when=0]) {
     var src = createSource();
     src.connectNode(engine.dest);
-    src.start(delay + engine.time);
+    src.start(when);
     return src;
   }
 }
