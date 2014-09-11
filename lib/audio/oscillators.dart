@@ -16,9 +16,9 @@ class Oscillator extends PlayableAudio {
   int frequency;
 
   /**
-   * Duration of the sound. If -1, will play back indefinetly
+   * Duration of the sound in seconds. If -1, will play back indefinetly
    */
-  int duration;
+  num duration;
 
   Oscillator(this.type, this.frequency, AudioEngine engine,
     {this.duration: -1}): super(engine);
@@ -27,26 +27,26 @@ class Oscillator extends PlayableAudio {
   WebAudio.AudioSourceNode createSource() {
     var src = engine.ctx.createOscillator();
     src.type = type;
-    src.frequency = frequency;
+    src.frequency.value = frequency;
     return src;
   }
 
   @override
-  WebAudio.AudioSourceNode play() {
+  WebAudio.AudioSourceNode play([num delay=0]) {
     var src = createSource();
     src.connectNode(engine.dest);
-    src.start(0);
+    src.start(delay + engine.time);
     if (duration > 0) {
-      src.stop(duration / 1000);
+      src.stop(duration + delay + engine.time);
     }
     return src;
   }
 
   @override
-  WebAudio.AudioSourceNode playLooping() {
+  WebAudio.AudioSourceNode playLooping([num delay=0]) {
     var src = createSource();
     src.connectNode(engine.dest);
-    src.start(0);
+    src.start(delay + engine.time);
     return src;
   }
 }
@@ -68,7 +68,7 @@ class CustomOscillator extends Oscillator {
    * coeffecients for the reverse fourrier transform (maybe?).
    */
   CustomOscillator(Float32List real, Float32List imag, int freq, AudioEngine engine,
-    {int duration: -1}):super("custom", freq, engine, duration: duration) {
+    {num duration: -1}):super("custom", freq, engine, duration: duration) {
       wave = engine.ctx.createPeriodicWave(real, imag);
     }
 

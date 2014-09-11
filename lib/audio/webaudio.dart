@@ -9,9 +9,12 @@ class AudioEngine {
   WebAudio.AudioNode dest;
 
   WebAudio.GainNode _gain;
+  
+  int _startTime = 0;
 
   AudioEngine() {
     ctx = new WebAudio.AudioContext();
+    _startTime = new DateTime.now().millisecondsSinceEpoch;
     _gain = ctx.createGain();
     dest = _gain;
     dest.connectNode(ctx.destination);
@@ -21,6 +24,11 @@ class AudioEngine {
   set volume(double vol) => _gain.gain.value = vol;
 
   double get volume => _gain.gain.value;
+  
+  /**
+   * Current time of the AudioContext. Useful for specifying 'when' for playing sounds
+   */
+  double get time => (new DateTime.now().millisecondsSinceEpoch - _startTime) / 1000;
 
   static bool _webAudioSupport = null;
   /**
@@ -60,14 +68,14 @@ abstract class PlayableAudio {
   Future<PlayableAudio> get onLoad => new Future.value(this);
 
   /**
-   * Creates an AudioSourceNode from this audio clip and begins playing it.
+   * Creates an AudioSourceNode from this audio clip and begins playing it [delay] seconds later.
    */
-  WebAudio.AudioSourceNode play();
+  WebAudio.AudioSourceNode play([num when=0]);
 
   /**
-   * Creates an AudioSourceNode from this audio clip and begins playing and looping it
+   * Creates an AudioSourceNode from this audio clip and begins playing and looping it [delay] seconds later.
    */
-  WebAudio.AudioSourceNode playLooping();
+  WebAudio.AudioSourceNode playLooping([num when=0]);
 }
 
 /**
@@ -96,26 +104,38 @@ class AudioStream extends PlayableAudio {
   }
 
   @override
-  WebAudio.MediaElementAudioSourceNode play() {
+  WebAudio.MediaElementAudioSourceNode play([num when=0]) {
     var src = createSource();
     src.connectNode(engine.dest);
     if (elem.currentTime > 0) {
       elem.currentTime = 0;
     }
     elem.loop = false;
-    elem.play();
+    if (delay > 0) {
+      new Timer(new Duration(milliseconds: (delay * 1000).toInt()), () {
+        elem.play();
+      });
+    } else {
+      elem.play();
+    }
     return src;
   }
 
   @override
-  WebAudio.MediaElementAudioSourceNode playLooping() {
+  WebAudio.MediaElementAudioSourceNode playLooping([num when=0]) {
     var src = createSource();
     src.connectNode(engine.dest);
     if (elem.currentTime > 0) {
       elem.currentTime = 0;
     }
     elem.loop = true;
-    elem.play();
+    if (delay > 0) {
+      new Timer(new Duration(milliseconds: (delay * 1000).toInt()), () {
+        elem.play();
+      });
+    } else {
+      elem.play();
+    }
     return src;
   }
 
@@ -185,19 +205,19 @@ class Sound extends PlayableAudio {
   }
 
   @override
-  WebAudio.AudioBufferSourceNode play() {
+  WebAudio.AudioBufferSourceNode play([num when=0]) {
     var src = createSource();
     src.connectNode(engine.dest);
-    src.start(0);
+    src.start(when);
     return src;
   }
 
   @override
-  WebAudio.AudioBufferSourceNode playLooping() {
+  WebAudio.AudioBufferSourceNode playLooping([num when=0]) {
     var src = createSource();
     src.connectNode(engine.dest);
     src.loop = true;
-    src.start(0);
+    src.start(when);
     return src;
   }
 
