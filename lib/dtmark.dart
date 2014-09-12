@@ -25,6 +25,8 @@ part '2d/animation.dart';
 part '3d/geometry.dart';
 part '3d/material.dart';
 part '3d/mesh.dart';
+part '3d/tessellator.dart';
+part 'util/objparser.dart';
 
 //Audio
 part 'audio/streaming.dart';
