@@ -15,6 +15,7 @@ import 'package:browser_detect/browser_detect.dart' as BrowserDetect;
 part 'gl/shader.dart';
 part 'gl/texture.dart';
 part 'gl/framebuffer.dart';
+part 'gl/vertexbatch.dart';
 
 //2D stuff
 part '2d/spritebatch.dart';
