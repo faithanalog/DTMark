@@ -1,31 +1,25 @@
 part of dtmark;
 
-//TODO: Add Z index (make it a vert attrib) so that things don't have to be painter's algorithim. good idea? maybe...
 /**
- * A sprite batcher than will queue up sprites and draw them all in one draw
- * call. Not as effecient as pre-loading vertices to a buffer object,
- * but better than doing one draw call per sprite. This is convenient for
- * drawing anything that moves on the screen, or something dynamic like text,
- * but it may be ineffecient for static data like tiles in a tile based game.
+ * Base vertex batch class used by anything that needs to queue up vertices
+ * and push them to the GPU
  */
 class VertexBatch {
 
-  //Max 65536 verts before flush
   /**
    * The max number of verts to store in ram before rendering.
-   * Defaults to 65536, can be changed if needed. Changes affect
-   * all SpriteBatches created after the change.
+   * Defaults to 65536 / 2, can be changed if needed. Changes affect
+   * all VertexBatches created after the change.
    */
   static int BATCH_MAX_VERTS = 65536 ~/ 2;
 
-  //X,Y,U,V,R,G,B,A
   /**
    * The array used to store verts while batching.
    */
-  final Float32List verts = null;
+  Float32List verts = null;
 
   /**
-   * WebGL context associated with this SpriteBatch
+   * WebGL context associated with this VertexBatch
    */
   final WebGL.RenderingContext gl;
 
@@ -60,37 +54,46 @@ class VertexBatch {
   Matrix4 _transform = new Matrix4.identity();
   bool _rendering = false;
   bool _texChanged = false;
+  bool _quadInput = false;
 
-  List _attribs = null;
+  List<VertexAttrib> _attribs = null;
   int _maxVertSize = 0;
 
-  VertexBatch(this.gl, List<VertexAttrib> attribs) {
+  /**
+   * Constructs a new VertexBatch which will used the provided attribs
+   * if [quadInput] is specified, will draw vertices as if they specify quads,
+   * otherwise it is assumed they are triangles
+   */
+  VertexBatch(this.gl, List<VertexAttrib> attribs, {bool quadInput: false}) {
     _shader = null;
     _attribs = attribs;
+    _quadInput = quadInput;
     for (var attrib in attribs) {
       _maxVertSize += attrib.size;
     }
     _vOffMax = _maxVertSize * BATCH_MAX_VERTS;
-    verts = new Float32List(_vOffMax)
+    verts = new Float32List(_vOffMax);
 
     _buffer = gl.createBuffer();
 
-    //Generate indices
-    var indData = new Uint16List(6 * BATCH_MAX_VERTS ~/ 4);
-    var index = 0;
-    for (var i = 0; i < indData.length; i += 6) {
-      indData[i + 0] = index;
-      indData[i + 1] = index + 1;
-      indData[i + 2] = index + 2;
-      indData[i + 3] = index + 2;
-      indData[i + 4] = index + 3;
-      indData[i + 5] = index;
-      index += 4;
+    if (_quadInput) {
+      //Generate indices
+      var indData = new Uint16List(6 * BATCH_MAX_VERTS ~/ 4);
+      var index = 0;
+      for (var i = 0; i < indData.length; i += 6) {
+        indData[i + 0] = index;
+        indData[i + 1] = index + 1;
+        indData[i + 2] = index + 2;
+        indData[i + 3] = index + 2;
+        indData[i + 4] = index + 3;
+        indData[i + 5] = index;
+        index += 4;
+      }
+      _indices = gl.createBuffer();
+      gl.bindBuffer(WebGL.ELEMENT_ARRAY_BUFFER, _indices);
+      gl.bufferDataTyped(WebGL.ELEMENT_ARRAY_BUFFER, indData, WebGL.STATIC_DRAW);
+      gl.bindBuffer(WebGL.ELEMENT_ARRAY_BUFFER, null);
     }
-    _indices = gl.createBuffer();
-    gl.bindBuffer(WebGL.ELEMENT_ARRAY_BUFFER, _indices);
-    gl.bufferDataTyped(WebGL.ELEMENT_ARRAY_BUFFER, indData, WebGL.STATIC_DRAW);
-    gl.bindBuffer(WebGL.ELEMENT_ARRAY_BUFFER, null);
 
 
     _whiteTex = new Texture(null, gl);
@@ -129,18 +132,12 @@ class VertexBatch {
   }
 
   set shader(Shader shader) {
-    if (shader == null) {
-      _shader = _batchShader;
-    } else {
-      _shader = shader;
-    }
+    _shader = shader;
   }
 
   /**
    * The current shader program used when rendering the batch. Setting
    * this will not affect anything until the next time [begin] is called.
-   * Setting this to null will reset the shader to the default SpriteBatch
-   * shader.
    */
   Shader get shader => _shader;
 
@@ -164,6 +161,9 @@ class VertexBatch {
    */
   Matrix4 get modelView => _modelView;
 
+  /**
+   * The amount of floats in each vertex
+   */
   int get vertSize {
     int size = 0;
     for (var attrib in _attribs) {
@@ -171,6 +171,7 @@ class VertexBatch {
         size += attrib.size;
       }
     }
+    return size;
   }
 
   /**
@@ -187,9 +188,11 @@ class VertexBatch {
     _shader.setUniform1i("u_texture", 0);
 
     gl.bindBuffer(WebGL.ARRAY_BUFFER, _buffer);
-    gl.bindBuffer(WebGL.ELEMENT_ARRAY_BUFFER, _indices);
+    if (_quadInput) {
+      gl.bindBuffer(WebGL.ELEMENT_ARRAY_BUFFER, _indices);
+    }
 
-    int stride = _maxVertSize * 4;
+    int stride = vertSize * 4;
     int offs = 0;
     for (var attrib in _attribs) {
       if (attrib.active) {
@@ -207,7 +210,9 @@ class VertexBatch {
    */
   void end() {
     _flush();
-    gl.bindBuffer(WebGL.ELEMENT_ARRAY_BUFFER, null);
+    if (_quadInput) {
+      gl.bindBuffer(WebGL.ELEMENT_ARRAY_BUFFER, null);
+    }
     for (var attrib in _attribs) {
       if (attrib.active) {
         gl.disableVertexAttribArray(attrib.index);
@@ -238,7 +243,11 @@ class VertexBatch {
         _texChanged = false;
       }
       gl.bufferDataTyped(WebGL.ARRAY_BUFFER, new Float32List.view(verts.buffer, 0, _vOff), WebGL.STREAM_DRAW);
-      gl.drawElements(WebGL.TRIANGLES, (_vOff ~/ vertSize ~/ 4 * 6), WebGL.UNSIGNED_SHORT, 0);
+      if (_quadInput) {
+        gl.drawElements(WebGL.TRIANGLES, (_vOff ~/ vertSize ~/ 4 * 6), WebGL.UNSIGNED_SHORT, 0);
+      } else {
+        gl.drawArrays(WebGL.TRIANGLES, 0, (_vOff ~/ vertSize));
+      }
     }
     _vOff = 0;
   }

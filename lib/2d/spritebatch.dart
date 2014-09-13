@@ -10,10 +10,6 @@ part of dtmark;
  */
 class SpriteBatch extends VertexBatch {
 
-  List<VertexAttrib> _vertAttribs = [new VertexAttrib(0, 2),
-      new VertexAttrib(1, 2),
-      new VertexAttrib(2, 4)];
-
   /**
    * Constructs a new SpriteBatch with the given rendering context [gl].
    * If [width] and [height] are provided, they will be used to create
@@ -22,7 +18,10 @@ class SpriteBatch extends VertexBatch {
    * top right corner. If [width] and [height] are not provided,
    * [projection] should be set manually.
    */
-  SpriteBatch(WebGL.RenderingContext gl, {int width: 1, int height: 1}) : super(gl, _vertAttribs) {
+  SpriteBatch(WebGL.RenderingContext gl, {int width: 1, int height: 1}) : super(gl, [new VertexAttrib(0, 2),
+      new VertexAttrib(1, 2),
+      new VertexAttrib(2, 4)], quadInput: true) {
+
     _shader = getBatchShader(gl);
     _projection = makeOrthographicMatrix(0, width, 0, height, -1, 1);
   }
@@ -135,6 +134,21 @@ class SpriteBatch extends VertexBatch {
    */
   void drawAnimation(SpriteAnimation anim, double x, double y, [double width, double height]) {
     drawRegion(anim.texRegion, x, y, width, height);
+  }
+
+  /**
+   * The current shader program used when rendering the batch. Setting
+   * this will not affect anything until the next time [begin] is called.
+   * Setting this to null will reset the shader to the default SpriteBatch
+   * shader.
+   */
+  @override
+  set shader(Shader shader) {
+    if (shader == null) {
+      _shader = _batchShader;
+    } else {
+      _shader = shader;
+    }
   }
 
   static Shader _batchShader;
