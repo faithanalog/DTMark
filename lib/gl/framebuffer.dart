@@ -38,8 +38,8 @@ class Framebuffer {
       _depthBuffer = gl.createRenderbuffer();
       gl.bindRenderbuffer(WebGL.RENDERBUFFER, _depthBuffer);
       gl.renderbufferStorage(WebGL.RENDERBUFFER, WebGL.DEPTH_COMPONENT16, width, height);
-      gl.framebufferRenderbuffer(WebGL.RENDERBUFFER, WebGL.DEPTH_ATTACHMENT, WebGL.RENDERBUFFER, _depthBuffer);
       gl.bindRenderbuffer(WebGL.RENDERBUFFER, null);
+      gl.framebufferRenderbuffer(WebGL.FRAMEBUFFER, WebGL.DEPTH_ATTACHMENT, WebGL.RENDERBUFFER, _depthBuffer);
     }
     gl.bindFramebuffer(WebGL.FRAMEBUFFER, null);
   }
