@@ -5,8 +5,13 @@ class Tessellator extends VertexBatch {
   Tessellator(WebGL.RenderingContext gl) : super(gl, [new VertexAttrib(0, 3), //Position
       new VertexAttrib(1, 2), //tex coords
       new VertexAttrib(2, 4), //color
-      new VertexAttrib(3, 3)] /*normals*/) {
+      new VertexAttrib(3, 3)] /*normals*/, quadInput: true) {
+    //Quad input is passed to super() as true, but then immediately set to
+    //false. This is because the indices are not generated unless quad input
+    //is initially passed in as true, but I want the default mode to be
+    //triangles
     _shader = getTessShader(gl);
+    _quadInput = false;
     useTexture = false;
     useColor = false;
     useNormals = false;
@@ -70,11 +75,17 @@ class Tessellator extends VertexBatch {
     _attribs[3].active = useNorm;
   }
 
+  set useQuads(bool useQuads) {
+    _quadInput = useQuads;
+  }
+
   bool get useTexture => _attribs[1].active;
 
   bool get useColor => _attribs[2].active;
 
   bool get useNormals => _attribs[3].active;
+
+  bool get useQuads => _quadInput;
 
   /**
    * The current shader program used when rendering the batch. Setting
