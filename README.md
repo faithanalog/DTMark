@@ -14,6 +14,11 @@ anything just yet.
 
 Usage
 ---
+For a somewhat complex and ugly, but working example, see this port of
+Prleude of the Chambered from java to dart:
+[https://github.com/unknownloner/potc-dart](https://github.com/unknownloner/potc-dart).
+
+
 To start, simply make a class that extends BaseGame. Then instantiate it and
 call launchGame on it. Here is a basic example.
 ```dart
