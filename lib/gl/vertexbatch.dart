@@ -205,8 +205,8 @@ class VertexBatch {
 
   /**
    * Flushes any remaining vertices from the VertexBatch, unbinds the
-   * buffer bound to `ELEMENT_ARRAY_BUFFER`, and disables vertix attrib
-   * arrays 0, 1, and 2.
+   * buffer bound to `ELEMENT_ARRAY_BUFFER`, and disables all
+   * vertex attrib arrays activated by calling [begin].
    */
   void end() {
     _flush();
