@@ -2,7 +2,7 @@ part of dtmark;
 
 /**
  * Base vertex batch class used by anything that needs to queue up vertices
- * and push them to the GPU
+ * and push them to the GPU. Intended for internal use only
  */
 class VertexBatch {
 
@@ -42,7 +42,7 @@ class VertexBatch {
   Texture _lastTex = null;
 
   /**
-   * Color used when rendering anything with the SpriteBatch. Changing
+   * Color used when rendering anything with the VertexBatch. Changing
    * this will affect anything drawn after it is changed.
    */
   Vector4 color = new Vector4(1.0, 1.0, 1.0, 1.0);
@@ -175,7 +175,7 @@ class VertexBatch {
   }
 
   /**
-   * Sets up the state required to render the sprite batch, including
+   * Sets up the state required to render the vertex batch, including
    * the current shader, transform matrix, and texture.
    */
   void begin() {
@@ -204,8 +204,8 @@ class VertexBatch {
   }
 
   /**
-   * Flushes any remaining vertices from the SpriteBatch, unbinds the
-   * buffer bound to ELEMENT_ARRAY_BUFFER, and disables vertix attrib
+   * Flushes any remaining vertices from the VertexBatch, unbinds the
+   * buffer bound to `ELEMENT_ARRAY_BUFFER`, and disables vertix attrib
    * arrays 0, 1, and 2.
    */
   void end() {
@@ -222,7 +222,7 @@ class VertexBatch {
   }
 
   /**
-   * Renders all vertices buffered in the SpriteBatch
+   * Renders all vertices buffered in the VertexBatch
    */
   void flush() {
       _flush();
@@ -235,6 +235,9 @@ class VertexBatch {
   }
 
   void _flush() {
+    if (!_rendering) {
+      return;
+    }
     if (_vOff > 0) {
       if (_texChanged) {
         if (_lastTex != null) {

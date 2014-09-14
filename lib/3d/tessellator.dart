@@ -1,6 +1,21 @@
 part of dtmark;
 
+/**
+ * The 3D equivelant of sprite batch, allows simple rendering of 3d
+ * content by uploading vertices on the fly. This is not an effecient
+ * way to render static 3d content, and you should consider storing
+ * your static terrain/models in vertex buffers yourself.
+ *
+ * Later versions will allow you to add vertices to a
+ * tessellator and automatically generate a buffer from
+ * them. Technically you can already do this, but it requires more effort
+ */
 class Tessellator extends VertexBatch {
+
+  /**
+   * Current normal vector used when adding vertices
+   */
+  Vector3 normal = new Vector3(0.0, 0.0, 0.0);
 
   Tessellator(WebGL.RenderingContext gl) : super(gl, [new VertexAttrib(0, 3), //Position
       new VertexAttrib(1, 2), //tex coords
@@ -17,6 +32,9 @@ class Tessellator extends VertexBatch {
     useNormals = false;
   }
 
+  /**
+   * Adds a vertex to the tessellator with the given texture coords
+   */
   void vertexUV(double x, double y, double z, double u, double v) {
     _flushIfNeeded();
     verts[_vOff + 0] = x;
@@ -36,13 +54,16 @@ class Tessellator extends VertexBatch {
       _vOff += 4;
     }
     if (useNormals) {
-      verts[_vOff + 0] = 0.0;
-      verts[_vOff + 1] = 0.0;
-      verts[_vOff + 2] = 0.0;
+      verts[_vOff + 0] = normal.x;
+      verts[_vOff + 1] = normal.y;
+      verts[_vOff + 2] = normal.z;
       _vOff += 3;
     }
   }
 
+  /**
+   * Adds a vertex to the tessellator with texture coords of (0.0, 0.0)
+   */
   void vertex(double x, double y, double z) {
     vertexUV(x, y, z, 0.0, 0.0);
   }
@@ -79,12 +100,31 @@ class Tessellator extends VertexBatch {
     _quadInput = useQuads;
   }
 
+  /**
+   * Texture that will be used when rendering vertices. Setting this
+   * to null will reset it to a 1x1 pixel white texture
+   */
+  Texture get texture => _lastTex;
+
+  /**
+   * Whether or not texture coordinates should be used
+   */
   bool get useTexture => _attribs[1].active;
 
+  /**
+   * Whether or not color should be used. If false, color will default to white
+   */
   bool get useColor => _attribs[2].active;
 
+  /**
+   * Whether or not normals should be used
+   */
   bool get useNormals => _attribs[3].active;
 
+  /**
+   * Whether or not the input vertices will be interpreted as quads. If false,
+   * they will be considered triangles
+   */
   bool get useQuads => _quadInput;
 
   /**
