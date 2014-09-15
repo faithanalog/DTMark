@@ -76,6 +76,39 @@ class Tessellator extends VertexBatch {
     }
   }
 
+  /**
+   * Begins saving vertices, but does not set up GL state for rendering
+   */
+  void beginSaving() {
+    _vOff = 0;
+  }
+
+  /**
+   * Save the current vertices as a new Geometry. If [bakeModelView] is true,
+   * each position will be transformed with the modelView matrix before
+   * being saved.
+   */
+  Geometry save([bool bakeModelView = false]) {
+    if (useQuads) {
+      //TODO: triangulate faces
+    } else {
+      var geomVerts = new Float32List(_vOff);
+      for (int i = 0; i < _vOff; i++) {
+        geomVerts[i] = verts[i];
+      }
+    }
+    Geometry geom = new Geometry();
+    geom.vertices = geomVerts;
+    geom.hasTexture = useTexture;
+    geom.hasColor = useColor;
+    geom.hasNormals = useNormals;
+    geom.transform = modelView.clone();
+    if (bakeModelView) {
+      geom.bakeTransform();
+    }
+    return geom;
+  }
+
   set texture(Texture tex) {
     if (tex == null) {
       _switchTexture(_whiteTex);
