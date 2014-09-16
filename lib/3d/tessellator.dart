@@ -89,6 +89,7 @@ class Tessellator extends VertexBatch {
    * being saved.
    */
   Geometry save([bool bakeModelView = false]) {
+    Float32List geomVerts = null;
     if (useQuads) {
       //TODO: triangulate faces
     } else {
@@ -97,8 +98,7 @@ class Tessellator extends VertexBatch {
         geomVerts[i] = verts[i];
       }
     }
-    Geometry geom = new Geometry();
-    geom.vertices = geomVerts;
+    Geometry geom = new Geometry(gl, geomVerts);
     geom.hasTexture = useTexture;
     geom.hasColor = useColor;
     geom.hasNormals = useNormals;

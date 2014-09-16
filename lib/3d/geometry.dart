@@ -43,7 +43,7 @@ class Geometry {
       //Avoid lots of ram allocs during transformations
       Vector4 invec = new Vector4.zero();
       Vector4 outvec = new Vector4.zero();
-      for (int i = 0; i < _vOff; i += stride) {
+      for (int i = 0; i < vertices.length; i += stride) {
         var x = vertices[i];
         var y = vertices[i + 1];
         var z = vertices[i + 2];

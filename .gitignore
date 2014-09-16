@@ -10,3 +10,4 @@ packages
 *.js.map
 .DS_Store
 *.bat
+.c9
