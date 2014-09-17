@@ -84,6 +84,6 @@ class Geometry {
     if (hasNormals) {
       gl.vertexAttribPointer(3, 3, WebGL.FLOAT, false, stride, offs);
     }
-    gl.drawArrays(WebGL.TRIANGLES, 0, vertices.length ~/ stride);
+    gl.drawArrays(WebGL.TRIANGLES, 0, vertices.length ~/ vertSize);
   }
 }

@@ -128,6 +128,9 @@ class Tessellator extends VertexBatch {
     } else {
       _whiteTex.bind();
     }
+    if (!geom.hasColor) {
+      gl.vertexAttrib4f(2, 1.0, 1.0, 1.0, 1.0);
+    }
     gl.enableVertexAttribArray(0);
     if (geom.hasTexture) {
       gl.enableVertexAttribArray(1);
