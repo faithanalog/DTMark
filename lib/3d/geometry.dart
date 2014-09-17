@@ -67,9 +67,9 @@ class Geometry {
   void render() {
     gl.bindBuffer(WebGL.ARRAY_BUFFER, _vertBuff);
     if (needsUpdate) {
-      gl.bufferDataTyped(WebGL.ARRAY_BUFFER, vertices, WebGL.STREAM_DRAW);
+      gl.bufferDataTyped(WebGL.ARRAY_BUFFER, vertices, WebGL.STATIC_DRAW);
     }
-    int stride = vertSize;
+    int stride = vertSize * 4;
     int offs = 0;
     gl.vertexAttribPointer(0, 3, WebGL.FLOAT, false, stride, offs);
     offs += 12;

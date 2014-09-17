@@ -110,6 +110,47 @@ class Tessellator extends VertexBatch {
     return geom;
   }
 
+  /**
+   * Renders some geometry. Don't call between [begin] and [end]
+   */
+  void renderGeometry(Geometry geom) {
+    _shader.use();
+    _transform.setFrom(_projection);
+    _transform.multiply(_modelView);
+    if (geom.transform != null) {
+      _transform.multiply(geom.transform);
+    }
+    _shader.setUniformMatrix4fv("u_transform", false, _transform);
+    _shader.setUniform1i("u_texture", 0);
+
+    if (geom.hasTexture) {
+      _lastTex.bind();
+    } else {
+      _whiteTex.bind();
+    }
+    gl.enableVertexAttribArray(0);
+    if (geom.hasTexture) {
+      gl.enableVertexAttribArray(1);
+    }
+    if (geom.hasColor) {
+      gl.enableVertexAttribArray(2);
+    }
+    if (geom.hasNormals) {
+      gl.enableVertexAttribArray(3);
+    }
+    geom.render();
+    gl.disableVertexAttribArray(0);
+    if (geom.hasTexture) {
+      gl.disableVertexAttribArray(1);
+    }
+    if (geom.hasColor) {
+      gl.disableVertexAttribArray(2);
+    }
+    if (geom.hasNormals) {
+      gl.disableVertexAttribArray(3);
+    }
+  }
+
   set texture(Texture tex) {
     if (tex == null) {
       _switchTexture(_whiteTex);
