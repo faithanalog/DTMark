@@ -20,7 +20,7 @@ class Geometry {
   Geometry(WebGL.RenderingContext gl, [Float32List verts = null]) {
     _gl = gl;
     _vertBuff = gl.createBuffer();
-    vertices = verts;
+    this.vertices = verts;
     needsUpdate = true;
   }
 
@@ -39,20 +39,18 @@ class Geometry {
    */
   void bakeTransform() {
     int stride = vertSize;
-    for (int i = 0; i < vertices.length; i++) {
-      //Avoid lots of ram allocs during transformations
-      Vector4 invec = new Vector4.zero();
-      Vector4 outvec = new Vector4.zero();
-      for (int i = 0; i < vertices.length; i += stride) {
-        var x = vertices[i];
-        var y = vertices[i + 1];
-        var z = vertices[i + 2];
-        invec.setValues(x, y, z, 1.0);
-        transform.transformed(invec, outvec);
-        vertices[i] = outvec.x;
-        vertices[i + 1] = outvec.y;
-        vertices[i + 2] = outvec.z;
-      }
+    //Avoid lots of ram allocs during transformations
+    Vector4 invec = new Vector4.zero();
+    Vector4 outvec = new Vector4.zero();
+    for (int i = 0; i < vertices.length; i += stride) {
+      var x = vertices[i];
+      var y = vertices[i + 1];
+      var z = vertices[i + 2];
+      invec.setValues(x, y, z, 1.0);
+      transform.transformed(invec, outvec);
+      vertices[i] = outvec.x;
+      vertices[i + 1] = outvec.y;
+      vertices[i + 2] = outvec.z;
     }
     transform = null;
     needsUpdate = true;

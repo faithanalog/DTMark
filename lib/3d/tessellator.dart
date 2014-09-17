@@ -93,11 +93,12 @@ class Tessellator extends VertexBatch {
     if (useQuads) {
       //TODO: triangulate faces
     } else {
-      var geomVerts = new Float32List(_vOff);
+      geomVerts = new Float32List(_vOff);
       for (int i = 0; i < _vOff; i++) {
         geomVerts[i] = verts[i];
       }
     }
+    _vOff = 0;
     Geometry geom = new Geometry(gl, geomVerts);
     geom.hasTexture = useTexture;
     geom.hasColor = useColor;
