@@ -37,11 +37,16 @@ class BasicMeshRenderer extends MeshRenderer {
   int _blendDst = WebGL.ONE_MINUS_SRC_ALPHA;
   bool _depthTest = true;
 
+  bool _texEnabled = false;
+  bool _colEnabled = false;
+  bool _normEnabled = false;
+
   Shader _shader;
   Matrix4 _projection = new Matrix4.identity();
   Matrix4 _modelView = new Matrix4.identity();
   Matrix4 _transform = new Matrix4.identity();
 
+  //Identity matrix, should not be modified
   Matrix4 _ident = new Matrix4.identity();
 
   /**
@@ -52,7 +57,6 @@ class BasicMeshRenderer extends MeshRenderer {
 
   BasicMeshRenderer(WebGL.RenderingContext gl) : super(gl) {
     _shader = getMeshShader(gl);
-
     _whiteTex = new Texture(null, gl);
     gl.texImage2DTyped(WebGL.TEXTURE_2D, 0, WebGL.RGBA, 1, 1, 0, WebGL.RGBA, WebGL.UNSIGNED_BYTE, new Uint8List.fromList([255, 255, 255, 255]));
 
@@ -77,8 +81,9 @@ class BasicMeshRenderer extends MeshRenderer {
     gl.enable(WebGL.DEPTH_TEST);
 
     gl.enableVertexAttribArray(0);
-    gl.enableVertexAttribArray(1);
-    gl.enableVertexAttribArray(2);
+    _texEnabled = false;
+    _colEnabled = false;
+    _normEnabled = false;
   }
 
   @override
@@ -86,8 +91,9 @@ class BasicMeshRenderer extends MeshRenderer {
     gl.disable(WebGL.BLEND);
     gl.disable(WebGL.DEPTH_TEST);
     gl.disableVertexAttribArray(0);
-    gl.disableVertexAttribArray(1);
-    gl.disableVertexAttribArray(2);
+    if (_texEnabled) gl.disableVertexAttribArray(1);
+    if (_colEnabled) gl.disableVertexAttribArray(2);
+    if (_normEnabled) gl.disableVertexAttribArray(3);
   }
 
   @override
@@ -98,11 +104,7 @@ class BasicMeshRenderer extends MeshRenderer {
     }
     if (_blend != material.blend) {
       _blend = material.blend;
-      if (_blend) {
-        gl.enable(WebGL.BLEND);
-      } else {
-        gl.disable(WebGL.BLEND);
-      }
+      setGLState(gl, WebGL.BLEND, _blend);
     }
     if (_blendSrc != material.blendSrc || _blendDst != material.blendDst) {
       _blendSrc = material.blendSrc;
@@ -111,11 +113,7 @@ class BasicMeshRenderer extends MeshRenderer {
     }
     if (_depthTest != material.depthTest) {
       _depthTest = material.depthTest;
-      if (_depthTest) {
-        gl.enable(WebGL.DEPTH_TEST);
-      } else {
-        gl.disable(WebGL.DEPTH_TEST);
-      }
+      setGLState(gl, WebGL.DEPTH_TEST, _depthTest);
     }
     var color = material.color;
     var pos = mesh.position;
@@ -145,14 +143,26 @@ class BasicMeshRenderer extends MeshRenderer {
   }
 
   void _renderGeometry(Geometry geom) {
-    if (geom.transform != null) {
-      _shader.setUniformMatrix4fv("u_geomTransform", false, geom.transform);
-    } else {
-      _shader.setUniformMatrix4fv("u_geomTransform", false, _ident);
+    _shader.setUniformMatrix4fv("u_geomTransform", false, geom.transform == null ? _ident : geom.transform);
+
+    if (geom.hasTexture != _texEnabled) {
+      _texEnabled = geom.hasTexture;
+      setVertexAttribArray(gl, 1, _texEnabled);
     }
-    if (!geom.hasColor) {
-      gl.vertexAttrib4f(2, 1.0, 1.0, 1.0, 1.0);
+
+    if (geom.hasColor != _colEnabled) {
+      _colEnabled = geom.hasColor;
+      setVertexAttribArray(gl, 2, _colEnabled);
+      if (!_colEnabled) {
+        gl.vertexAttrib4f(2, 1.0, 1.0, 1.0, 1.0);
+      }
     }
+
+    if (geom.hasNormals != _normEnabled) {
+      _normEnabled = geom.hasNormals;
+      setVertexAttribArray(gl, 3, _normEnabled);
+    }
+
     geom.render();
     if (!geom.children.isEmpty) {
       for (final child in geom.children) {

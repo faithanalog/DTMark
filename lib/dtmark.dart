@@ -380,12 +380,38 @@ abstract class BaseGame {
 
 }
 
+/**
+ * Returns the next power of 2 number that comes after [val].
+ * If [val] is a power of 2, returns [val]
+ */
 int nextPowerOf2(int val) {
   int powof2 = 1;
   while (powof2 < val) {
     powof2 <<= 1;
   }
   return powof2;
+}
+
+/**
+ * Sets the VertexAttribArray [array] to be either enabled or disabled based on [active]
+ */
+void setVertexAttribArray(WebGL.RenderingContext gl, int array, bool active) {
+  if (active) {
+    gl.enableVertexAttribArray(array);
+  } else {
+    gl.disableVertexAttribArray(array);
+  }
+}
+
+/**
+ * Sets the state of something that can be glEnabled or glDisabled to [state]
+ */
+void setGLState(WebGL.RenderingContext gl, int enum, bool state) {
+  if (state) {
+    gl.enable(enum);
+  } else {
+    gl.disable(enum);
+  }
 }
 
 class GameMouseEvent {
