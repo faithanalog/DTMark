@@ -406,11 +406,11 @@ void setVertexAttribArray(WebGL.RenderingContext gl, int array, bool active) {
 /**
  * Sets the state of something that can be glEnabled or glDisabled to [state]
  */
-void setGLState(WebGL.RenderingContext gl, int enum, bool state) {
+void setGLState(WebGL.RenderingContext gl, int glEnum, bool state) {
   if (state) {
-    gl.enable(enum);
+    gl.enable(glEnum);
   } else {
-    gl.disable(enum);
+    gl.disable(glEnum);
   }
 }
 
