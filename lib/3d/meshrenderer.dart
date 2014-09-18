@@ -134,6 +134,10 @@ class BasicMeshRenderer extends MeshRenderer {
       _switchTexture(material.texture);
     }
     _renderGeometry(mesh.geometry);
+
+    for (final child in mesh.children) {
+      renderMesh(child);
+    }
   }
 
   void _switchTexture(Texture tex) {
@@ -165,10 +169,8 @@ class BasicMeshRenderer extends MeshRenderer {
     }
 
     geom.render();
-    if (!geom.children.isEmpty) {
-      for (final child in geom.children) {
-        _renderGeometry(child);
-      }
+    for (final child in geom.children) {
+      _renderGeometry(child);
     }
   }
 
