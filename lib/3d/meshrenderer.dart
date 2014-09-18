@@ -81,6 +81,7 @@ class BasicMeshRenderer extends MeshRenderer {
     gl.enable(WebGL.DEPTH_TEST);
 
     gl.enableVertexAttribArray(0);
+    gl.vertexAttrib4f(2, 1.0, 1.0, 1.0, 1.0);
     _texEnabled = false;
     _colEnabled = false;
     _normEnabled = false;
