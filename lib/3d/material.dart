@@ -37,4 +37,9 @@ class Material {
    */
   bool visible = true;
 
+  /**
+   * Texture to use when rendering material
+   */
+  Texture texture = null;
+
 }

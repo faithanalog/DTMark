@@ -44,8 +44,19 @@ class BasicMeshRenderer extends MeshRenderer {
 
   Matrix4 _ident = new Matrix4.identity();
 
+  /**
+   * A 1x1 pixel texture which is white. Used for rendering solid blocks of color
+   */
+  Texture _whiteTex;
+  Texture _lastTex = null;
+
   BasicMeshRenderer(WebGL.RenderingContext gl) : super(gl) {
     _shader = getMeshShader(gl);
+
+    _whiteTex = new Texture(null, gl);
+    gl.texImage2DTyped(WebGL.TEXTURE_2D, 0, WebGL.RGBA, 1, 1, 0, WebGL.RGBA, WebGL.UNSIGNED_BYTE, new Uint8List.fromList([255, 255, 255, 255]));
+
+    _lastTex = _whiteTex;
   }
 
   @override
@@ -118,19 +129,34 @@ class BasicMeshRenderer extends MeshRenderer {
       var meshTransform = new Matrix4.rotationX(rot.x).rotateY(rot.y).rotateZ(rot.z);
       _shader.setUniformMatrix4fv("u_transform", false, _transform * meshTransform);
     }
+    if (material.texture == null) {
+      _switchTexture(_whiteTex);
+    } else {
+      _switchTexture(material.texture);
+    }
     _renderGeometry(mesh.geometry);
+  }
+
+  void _switchTexture(Texture tex) {
+    if (_lastTex != tex) {
+      tex.bind();
+      _lastTex = tex;
+    }
   }
 
   void _renderGeometry(Geometry geom) {
     if (geom.transform != null) {
-      _shader.setUniformMatrix4fv("u_geomTransform", false, geom.transform)
+      _shader.setUniformMatrix4fv("u_geomTransform", false, geom.transform);
     } else {
       _shader.setUniformMatrix4fv("u_geomTransform", false, _ident);
+    }
+    if (!geom.hasColor) {
+      gl.vertexAttrib4f(2, 1.0, 1.0, 1.0, 1.0);
     }
     geom.render();
     if (!geom.children.isEmpty) {
       for (final child in geom.children) {
-        _renderGeom(child);
+        _renderGeometry(child);
       }
     }
   }
