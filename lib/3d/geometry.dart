@@ -14,6 +14,11 @@ class Geometry {
    */
   bool needsUpdate = false;
 
+  /**
+   * Any children will be rendered when [render] is called
+   */
+  List<Geometry> children = new List();
+
   WebGL.RenderingContext _gl;
   WebGL.Buffer _vertBuff;
 
