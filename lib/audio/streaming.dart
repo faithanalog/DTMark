@@ -39,7 +39,7 @@ class AudioStreaming {
    */
   static AudioElement loadAndPlayAudio(String path, {bool mp3: true, bool ogg: true, bool wav: true}) {
     var elem = loadAudio(path, mp3: mp3, ogg: ogg, wav: wav);
-    elem.onLoadStart.first.then((evt) {
+    elem.onCanPlayThrough.first.then((evt) {
       elem.play();
     });
     return elem;

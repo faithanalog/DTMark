@@ -97,7 +97,7 @@ class AudioStream extends PlayableAudio {
 
   AudioStream(String path, AudioEngine engine, [bool wav = false]): super(engine) {
     elem = AudioStreaming.loadAudio(path, wav: wav);
-    elem.onLoadStart.first.then((evt) {
+    elem.onCanPlayThrough.first.then((evt) {
       _loadCompleter.complete(this);
     });
   }
