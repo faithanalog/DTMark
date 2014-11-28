@@ -11,3 +11,5 @@ packages
 .DS_Store
 *.bat
 .c9
+.pub/
+pubspec.lock
