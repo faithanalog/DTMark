@@ -237,14 +237,6 @@ AB1AOTqANQBAAAQACIAAANABlKMDWAMABEAAgAAIAOAZ+AOg2b+6t+iJHQAAAABJRU5ErkJggg==
       ctx.fillText(char, (i & 15) * cellOffX, (i >> 4) * cellOffY);
     }
 
-    dispInfo(String char) {
-      int cc = char.codeUnitAt(0);
-      print("==$cc==");
-      print("${charU0[cc]} ${charU1[cc]}");
-      print("${charV0[cc]} ${charV1[cc]}");
-      print("${charWidths[cc]} ${charHeights[cc]}");
-    }
-
     _tex = new Texture(canvas, gl, mipmap: true);
     _tex.minFilter = WebGL.LINEAR_MIPMAP_LINEAR;
     _tex.magFilter = WebGL.LINEAR;
@@ -293,7 +285,10 @@ AB1AOTqANQBAAAQACIAAANABlKMDWAMABEAAgAAIAOAZ+AOg2b+6t+iJHQAAAABJRU5ErkJggg==
   }
 
   void _drawChar(SpriteBatch batch, int code, double x, double y) {
-    batch.drawTexRegionUV(_tex, x, y, charWidths[code] * scale, charHeights[code] * scale, charU0[code], charV0[code], charU1[code], charV1[code]);
+    batch.drawTexRegionUV(_tex, x, y,
+      charWidths[code] * scale, charHeights[code] * scale,
+      charU0[code], charV0[code],
+      charU1[code], charV1[code]);
   }
 
 }
