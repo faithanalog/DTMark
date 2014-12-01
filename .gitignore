@@ -13,3 +13,4 @@ packages
 .c9
 .pub/
 pubspec.lock
+*.swp

@@ -10,11 +10,8 @@ class AudioEngine {
 
   WebAudio.GainNode _gain;
 
-  int _startTime = 0;
-
   AudioEngine() {
     ctx = new WebAudio.AudioContext();
-    _startTime = new DateTime.now().millisecondsSinceEpoch;
     _gain = ctx.createGain();
     dest = _gain;
     dest.connectNode(ctx.destination);
@@ -29,7 +26,7 @@ class AudioEngine {
    * Current time of the AudioContext in seconds.
    * Used for specifying 'when' for playing sounds
    */
-  double get time => (new DateTime.now().millisecondsSinceEpoch - _startTime) / 1000;
+  double get time => ctx.currentTime;
 
   static bool _webAudioSupport = null;
   /**
