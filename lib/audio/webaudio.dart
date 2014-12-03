@@ -92,8 +92,8 @@ class AudioStream extends PlayableAudio {
   AudioElement elem;
   Completer<PlayableAudio> _loadCompleter = new Completer();
 
-  AudioStream(String path, AudioEngine engine, [bool wav = false]): super(engine) {
-    elem = AudioStreaming.loadAudio(path, wav: wav);
+  AudioStream(String path, AudioEngine engine, [String typeOverride = ""]): super(engine) {
+    elem = AudioStreaming.loadAudio(path, typeOverride);
     elem.onCanPlayThrough.first.then((evt) {
       _loadCompleter.complete(this);
     });

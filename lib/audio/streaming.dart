@@ -7,26 +7,20 @@ class AudioStreaming {
   /**
    * Loads the audio element from path, selecting the first supported type in
    * order of mp3, ogg and wav. the [path] should not include a file extension.
-   * Settings [mp3], [ogg], or [wav] will cause the loader to skip that file type.
+   * If [typeOverride] is set, will load audio from [path].[typeOverride].
    */
-  static AudioElement loadAudio(String path, {bool mp3: true, bool ogg: true, bool wav: true}) {
+  static AudioElement loadAudio(String path, [String typeOverride = ""]) {
     var elem = new AudioElement();
-    var toTry = new List<String>();
-    if (mp3 && elem.canPlayType("audio/mp3") != "") {
-      toTry.add("mp3");
+    if (typeOverride.isNotEmpty) {
+      path += "." + typeOverride;
+    } else if (BrowserDetect.browser.isSafari || BrowserDetect.browser.isIe) {
+      path += ".mp3";
+    } else if (BrowserDetect.browser.isChrome || BrowserDetect.browser.isFirefox || BrowserDetect.browser.isOpera) {
+      path += ".ogg";
+    } else {
+      path += ".wav";
     }
-    if (ogg && elem.canPlayType("audio/ogg") != "") {
-      toTry.add("ogg");
-    }
-    if (wav && elem.canPlayType("audio/wav") != "") {
-      toTry.add("wav");
-    }
-    for (final type in toTry) {
-      var srcElem = new SourceElement();
-      srcElem.src = "$path.$type";
-      srcElem.type = "audio/$type";
-      elem.append(srcElem);
-    }
+    elem.src = path;
     elem.load();
     return elem;
   }
