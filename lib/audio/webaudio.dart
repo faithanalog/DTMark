@@ -165,12 +165,14 @@ class Sound extends PlayableAudio {
   /**
    * Loads the audio file from [path], where path is the path
    * to the audio file without a file extension. Automatically
-   * determines whether to use mp3 or ogg. If [wav] is set to
-   * true, will load wav instead of trying mp3 or ogg.
+   * determines whether to use mp3 or ogg. If [typeOverride] is set,
+   * will load audio from [path].[typeOverride].
+   *
+   * For example, to force loading from mp3 use `new Sound.load("path/to/file", engine, "mp3")`
    */
-  Sound.load(String path, AudioEngine engine, [bool wav = false]): super(engine) {
-    if (wav) {
-      path += ".wav";
+  Sound.load(String path, AudioEngine engine, [String typeOverride = ""]): super(engine) {
+    if (typeOverride.isNotEmpty) {
+      path += "." + typeOverride;
     } else if (BrowserDetect.browser.isSafari || BrowserDetect.browser.isIe) {
       path += ".mp3";
     } else if (BrowserDetect.browser.isChrome || BrowserDetect.browser.isFirefox || BrowserDetect.browser.isOpera) {
