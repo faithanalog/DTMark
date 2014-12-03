@@ -5,8 +5,8 @@ part of dtmark;
  */
 class AudioStreaming {
   /**
-   * Loads the audio element from path, selecting the first supported type in
-   * order of mp3, ogg and wav. the [path] should not include a file extension.
+   * Loads the audio element from path, attempting to select a supported type
+   * based on the current browser. the [path] should not include a file extension.
    * If [typeOverride] is set, will load audio from [path].[typeOverride].
    */
   static AudioElement loadAudio(String path, [String typeOverride = ""]) {
@@ -26,13 +26,13 @@ class AudioStreaming {
   }
 
   /**
-   * Loads the audio element from path, selecting the first supported type in
-   * order of mp3, ogg and wav. the [path] should not include a file extension.
-   * Settings [mp3], [ogg], or [wav] will cause the loader to skip that file type.
+   * Loads the audio element from path, attempting to select a supported type
+   * based on the current browser. the [path] should not include a file extension.
+   * If [typeOverride] is set, will load audio from [path].[typeOverride].
    * Once the audio is loaded, it will play it.
    */
-  static AudioElement loadAndPlayAudio(String path, {bool mp3: true, bool ogg: true, bool wav: true}) {
-    var elem = loadAudio(path, mp3: mp3, ogg: ogg, wav: wav);
+  static AudioElement loadAndPlayAudio(String path, [String typeOverride = ""]) {
+    var elem = loadAudio(path, typeOverride);
     elem.onCanPlayThrough.first.then((evt) {
       elem.play();
     });
