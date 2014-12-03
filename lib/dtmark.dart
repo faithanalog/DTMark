@@ -67,7 +67,7 @@ abstract class BaseGame {
 
   /**
    * All mouse coordinates are multiplied by this.
-   * Use for if your [canvasScale] != 1.0 or your orthographics matrix
+   * Use for if your [canvasScale] != 1.0 or your orthographic matrix
    * resolution != canvas resolution.
    *
    * For example, if [canvasScale] is 2.0, set this to 2.0
