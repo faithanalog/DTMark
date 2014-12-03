@@ -94,6 +94,10 @@ abstract class BaseGame {
   /**
    * Whether or not to invert Y values from what they are provided as in the event.
    * This applies to what mouseY is set to.
+   *
+   * For example, if invertMouseY is true, canvas height is 100, and a mouse event
+   * is fired at (0,99), this will cause the game's event listener to change
+   * that to (0,0)
    */
   bool invertMouseY = true;
 
