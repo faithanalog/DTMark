@@ -140,7 +140,7 @@ abstract class BaseGame {
       //There's no reliable way to detect presence of mouse hardware,
       //so if we receive a mouse move event we assume the user
       //has a mouse and disable the built-in touch support.
-      canvas.onMouseMove.listen((evt) {
+      canvas.onMouseMove.first.then((evt) {
         tStart.cancel();
         tEnd.cancel();
         tMove.cancel();
