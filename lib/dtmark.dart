@@ -119,13 +119,16 @@ abstract class BaseGame {
 
     if (!touchSupport) {
       canvas.onMouseDown.listen((evt) {
-        _onMouseDown((evt.offset.x * canvasScale * mousePosScale).toInt(), (evt.offset.y * canvasScale * mousePosScale).toInt(), evt.button);
+        var p = _transformEventPoint(evt.offset);
+        _onMouseDown(p.x, p.y, evt.button);
       });
       canvas.onMouseUp.listen((evt) {
-        _onMouseUp((evt.offset.x * canvasScale * mousePosScale).toInt(), (evt.offset.y * canvasScale * mousePosScale).toInt(), evt.button);
+        var p = _transformEventPoint(evt.offset);
+        _onMouseUp(p.x, p.y, evt.button);
       });
       canvas.onMouseMove.listen((evt) {
-        _onMouseMove((evt.offset.x * canvasScale * mousePosScale).toInt(), (evt.offset.y * canvasScale * mousePosScale).toInt());
+        var p = _transformEventPoint(evt.offset);
+        _onMouseMove(p.x, p.y);
       });
       canvas.onKeyDown.listen((evt) {
         _onKeyDown(evt.keyCode);
@@ -134,30 +137,44 @@ abstract class BaseGame {
         _onKeyUp(evt.keyCode);
       });
     } else {
-      //Done through JS stuff to support cocoonjs
       canvas.onTouchStart.listen((evt) {
-        JsObject ev = new JsObject.fromBrowserObject(evt);
-        JsObject touch = new JsObject.fromBrowserObject(ev["changedTouches"][0]);
-        Point offset = new Point(touch["clientX"], touch["clientY"]) - canvas.client.topLeft;
-        _onMouseDown((offset.x * canvasScale * mousePosScale).toInt(), (offset.y * canvasScale * mousePosScale).toInt(), 0);
+        var p = _getTouchPoint(evt);
+        _onMouseDown(p.x, p.y, 0);
         evt.preventDefault();
       });
       canvas.onTouchEnd.listen((evt) {
-        JsObject ev = new JsObject.fromBrowserObject(evt);
-        JsObject touch = new JsObject.fromBrowserObject(ev["changedTouches"][0]);
-        Point offset = new Point(touch["clientX"], touch["clientY"]) - canvas.client.topLeft;
-        _onMouseUp((offset.x * canvasScale * mousePosScale).toInt(), (offset.y * canvasScale * mousePosScale).toInt(), 0);
+        var p = _getTouchPoint(evt);
+        _onMouseUp(p.x, p.y, 0);
         _onMouseMove(-1, -1);
         evt.preventDefault();
       });
       canvas.onTouchMove.listen((evt) {
-        JsObject ev = new JsObject.fromBrowserObject(evt);
-        JsObject touch = new JsObject.fromBrowserObject(ev["changedTouches"][0]);
-        Point offset = new Point(touch["clientX"], touch["clientY"]) - canvas.client.topLeft;
-        _onMouseMove((offset.x * canvasScale * mousePosScale).toInt(), (offset.y * canvasScale * mousePosScale).toInt());
+        var p = _getTouchPoint(evt);
+        _onMouseMove(p.x, p.y);
         evt.preventDefault();
       });
     }
+  }
+
+  /**
+   * Transforms browser event coordinates to game event coordinates
+   */
+  Point _transformEventPoint(Point p) {
+    int x = (p.x * canvasScale * mousePosScale).toInt();
+    int y = (p.y * canvasScale * mousePosScale).toInt();
+    return new Point(x, y);
+  }
+
+  /**
+   * Gets the position of `evt.changedTouches[0]` in game event coordinates.
+   */
+  Point _getTouchPoint(evt) {
+    //This directly accesses the JS objects to work around a bug with CocoonJS
+    //which causes errors when going through Dart
+    JsObject ev = new JsObject.fromBrowserObject(evt);
+    JsObject touch = new JsObject.fromBrowserObject(ev["changedTouches"][0]);
+    Point offset = new Point(touch["clientX"], touch["clientY"]) - canvas.client.topLeft;
+    return _transformEventPoint(offset);
   }
 
   /**
