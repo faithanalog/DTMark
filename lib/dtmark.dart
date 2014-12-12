@@ -118,42 +118,59 @@ abstract class BaseGame {
     }
 
     if (!touchSupport) {
-      canvas.onMouseDown.listen((evt) {
-        var p = _transformEventPoint(evt.offset);
-        _onMouseDown(p.x, p.y, evt.button);
-      });
-      canvas.onMouseUp.listen((evt) {
-        var p = _transformEventPoint(evt.offset);
-        _onMouseUp(p.x, p.y, evt.button);
-      });
-      canvas.onMouseMove.listen((evt) {
-        var p = _transformEventPoint(evt.offset);
-        _onMouseMove(p.x, p.y);
-      });
-      canvas.onKeyDown.listen((evt) {
-        _onKeyDown(evt.keyCode);
-      });
-      canvas.onKeyUp.listen((evt) {
-        _onKeyUp(evt.keyCode);
-      });
+      _subscribeMouseAndKeyEvents();
     } else {
-      canvas.onTouchStart.listen((evt) {
+      var tStart = canvas.onTouchStart.listen((evt) {
         var p = _getTouchPoint(evt);
         _onMouseDown(p.x, p.y, 0);
         evt.preventDefault();
       });
-      canvas.onTouchEnd.listen((evt) {
+      var tEnd = canvas.onTouchEnd.listen((evt) {
         var p = _getTouchPoint(evt);
         _onMouseUp(p.x, p.y, 0);
         _onMouseMove(-1, -1);
         evt.preventDefault();
       });
-      canvas.onTouchMove.listen((evt) {
+      var tMove = canvas.onTouchMove.listen((evt) {
         var p = _getTouchPoint(evt);
         _onMouseMove(p.x, p.y);
         evt.preventDefault();
       });
+
+      //There's no reliable way to detect presence of mouse hardware,
+      //so if we receive a mouse move event we assume the user
+      //has a mouse and disable the built-in touch support.
+      canvas.onMouseMove.listen((evt) {
+        tStart.cancel();
+        tEnd.cancel();
+        tMove.cancel();
+        _subscribeMouseAndKeyEvents();
+      });
     }
+  }
+
+  /**
+   * Adds mouse down/up/move & key down/up listeners to the canvas for the game
+   */
+  void _subscribeMouseAndKeyEvents() {
+    canvas.onMouseDown.listen((evt) {
+      var p = _transformEventPoint(evt.offset);
+      _onMouseDown(p.x, p.y, evt.button);
+    });
+    canvas.onMouseUp.listen((evt) {
+      var p = _transformEventPoint(evt.offset);
+      _onMouseUp(p.x, p.y, evt.button);
+    });
+    canvas.onMouseMove.listen((evt) {
+      var p = _transformEventPoint(evt.offset);
+      _onMouseMove(p.x, p.y);
+    });
+    canvas.onKeyDown.listen((evt) {
+      _onKeyDown(evt.keyCode);
+    });
+    canvas.onKeyUp.listen((evt) {
+      _onKeyUp(evt.keyCode);
+    });
   }
 
   /**
