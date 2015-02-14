@@ -161,6 +161,13 @@ class Sound extends PlayableAudio {
       _loadCompleter.complete(this);
     });
   }
+  
+  /**
+   * Creates a sound from an existing AudioBuffer
+   */
+  Sound.fromBuffer(this.buffer, AudioEngine engine): super(engine) {
+    _loadCompleter.complete(this);
+  }
 
   /**
    * Loads the audio file from [path], where path is the path
