@@ -345,7 +345,6 @@ class RootPanel extends Container {
   double scale = 1.0;
 
   RootPanel(this.game) {
-    var canvas = game.canvas;
     var gl = game.gl;
     batch = new SpriteBatch(gl);
     game.onMouseDown.listen((evt) {
