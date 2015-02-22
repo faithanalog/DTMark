@@ -21,11 +21,6 @@ class SpriteAnimation {
   int frameDuration;
 
   /**
-   * Number of frames in the animation
-   */
-  int numFrames;
-
-  /**
    * Whether or not the animation will loop when it completes
    */
   bool loop;
@@ -39,11 +34,11 @@ class SpriteAnimation {
    * Texture regions for the frames used in the animation.
    */
   List<TextureRegion> frames;
-
+  
   /**
-   * Returned for the current frame if the current frame is null (texture still loading)
+   * Number of frames in the animation
    */
-  TextureRegion _blankFrame;
+  int get numFrames => frames.length; 
 
   //When the animation was started
   int _animStart = 0;
@@ -53,6 +48,9 @@ class SpriteAnimation {
 
   //Is the animation playing
   bool _playing = false;
+  
+  SpriteAnimation.fromRegions(this.width, this.height, this.frameDuration,
+      this.animationFrames, this.frames, {this.loop: true});
 
   /**
    * Constructs a new SpriteAnimation that displays each frame for [frameDuration] milliseconds.
@@ -64,22 +62,24 @@ class SpriteAnimation {
    * the number of frames in the animation. [startFrame] defines the first
    * frame of the animation.
    */
-  SpriteAnimation(this.width, this.height, this.frameDuration, this.numFrames, this.animationFrames,
-    {int startFrame: 0, int padX: 0, int padY: 0, bool loop: true}) {
-      frames = new List(numFrames);
-      _blankFrame = new TextureRegion(animationFrames, 0, 0, width, height);
-      animationFrames.onLoad.then((_) {
-        for (int i = 0; i < numFrames; i++) {
-          int cellW = width + padX, cellH = height + padX;
-          int frm = i + startFrame;
-          int frmX = frm % ((animationFrames.width + padX) ~/ cellW) * cellW;
-          int frmY = frm ~/ ((animationFrames.width + padX) ~/ cellW) * cellH;
-          frames[i] = new TextureRegion(animationFrames, frmX, frmY, width, height);
-        }
-      });
-      this.loop = loop;
-      _savedFrame = 0;
-    }
+  SpriteAnimation(int width, int height, int frameDuration, int numFrames,
+      Texture animationFrames, {int startFrame: 0, int padX: 0, int padY: 0, bool loop: true}):
+    this.withFrames(width, height, frameDuration, new Iterable.generate(numFrames),
+        animationFrames, startFrame: startFrame, padX: padX, padY: padY, loop: loop);
+  
+  SpriteAnimation.withFrames(this.width, this.height, this.frameDuration, Iterable<int> frameList,
+      this.animationFrames, {int startFrame: 0, int padX: 0, int padY: 0, this.loop: true}) {
+    frames = [new TextureRegion(animationFrames, 0, 0, width, height)];
+    animationFrames.onLoad.then((_) {
+      frames = frameList.map((i) {
+        int cellW = width + padX, cellH = height + padX;
+        int frm = i + startFrame;
+        int frmX = frm % ((animationFrames.width + padX) ~/ cellW) * cellW;
+        int frmY = frm ~/ ((animationFrames.width + padX) ~/ cellW) * cellH;
+        return new TextureRegion(animationFrames, frmX, frmY, width, height);
+      }).toList(growable: false);
+    });
+  }
 
   /**
    * Starts or resumes the animation
@@ -148,11 +148,5 @@ class SpriteAnimation {
   /**
    * Current texture region of the animation
    */
-  TextureRegion get texRegion {
-    TextureRegion frm = frames[frame];
-    if (frm == null) {
-      return _blankFrame;
-    }
-    return frames[frame];
-  }
+  TextureRegion get texRegion => frames[frame];
 }
