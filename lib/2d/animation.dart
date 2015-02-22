@@ -64,16 +64,16 @@ class SpriteAnimation {
    */
   SpriteAnimation(int width, int height, int frameDuration, int numFrames,
       Texture animationFrames, {int startFrame: 0, int padX: 0, int padY: 0, bool loop: true}):
-    this.withFrames(width, height, frameDuration, new Iterable.generate(numFrames),
-        animationFrames, startFrame: startFrame, padX: padX, padY: padY, loop: loop);
+    this.withFrames(width, height, frameDuration,
+        new Iterable.generate(numFrames, (x) => x + startFrame), //Frames startFrame to (startFrame + numFrames - 1)
+        animationFrames, padX: padX, padY: padY, loop: loop);
   
   SpriteAnimation.withFrames(this.width, this.height, this.frameDuration, Iterable<int> frameList,
-      this.animationFrames, {int startFrame: 0, int padX: 0, int padY: 0, this.loop: true}) {
+      this.animationFrames, {int padX: 0, int padY: 0, this.loop: true}) {
     frames = [new TextureRegion(animationFrames, 0, 0, width, height)];
     animationFrames.onLoad.then((_) {
-      frames = frameList.map((i) {
+      frames = frameList.map((frm) {
         int cellW = width + padX, cellH = height + padX;
-        int frm = i + startFrame;
         int frmX = frm % ((animationFrames.width + padX) ~/ cellW) * cellW;
         int frmY = frm ~/ ((animationFrames.width + padX) ~/ cellW) * cellH;
         return new TextureRegion(animationFrames, frmX, frmY, width, height);
