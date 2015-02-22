@@ -1,5 +1,11 @@
 part of dtmark;
 
+
+/**
+ * Function which can take an x, y, and option width/height params to draw an E 
+ */
+typedef void DrawFunc<E>(E t, double x, double y, [double width, double height]);
+
 //TODO: Add Z index (make it a vert attrib) so that things don't have to be painter's algorithim. good idea? maybe...
 /**
  * A sprite batcher than will queue up sprites and draw them all in one draw
@@ -71,12 +77,10 @@ class SpriteBatch extends VertexBatch {
    */
   void drawTexture(Texture tex, double x, double y, [double width, double height]) {
     _switchTexture(tex);
-    if (width == null) {
+    if (width == null)
       width = tex.width.toDouble();
-    }
-    if (height == null) {
+    if (height == null)
       height = tex.height.toDouble();
-    }
     _addQuad(x, y + height, 0.0, 0.0, x + width, y, 1.0, 1.0);
   }
 
@@ -86,13 +90,26 @@ class SpriteBatch extends VertexBatch {
    * size is not specified.
    */
   void drawRegion(TextureRegion texRegion, double x, double y, [double width, double height]) {
-    if (width == null) {
+    if (width == null)
       width = texRegion.width.toDouble();
-    }
-    if (height == null) {
+    if (height == null)
       height = texRegion.height.toDouble();
-    }
     drawTexRegion(texRegion.texture, x, y, width, height, texRegion.x, texRegion.y, texRegion.width, texRegion.height);
+  }
+  
+  /**
+   * Repeatedly call [f] to draw it multiple times across the X and Y axis.
+   * Drawing starts at ([x],[y]), and continues to
+   * ([x] + [w] * ([repeatsX] - 1), [y] + [h] * ([repeatsY] - 1)).
+   * [w] and [h] specify the width and height to be provided to [f], as well
+   * as the offset between each call to [f].  
+   */
+  void drawRepeating(DrawFunc f, dynamic tex, double x, double y, double w, double h, int repeatsX, int repeatsY) {
+    for (int col = 0; col < repeatsX; col++) {
+      for (int row = 0; row < repeatsY; row++) {
+        f(tex, x + col * w, y + row * h, w, h);
+      }
+    }
   }
 
   /**
