@@ -86,9 +86,7 @@ class FontRenderer {
    *     }
    */
   FontRenderer(String url, WebGL.RenderingContext gl) {
-    Completer<FontRenderer> comp = new Completer();
-    _onLoad = comp.future;
-    HttpRequest.getString(url).then((text) {
+    _onLoad = HttpRequest.getString(url).then((text) {
       var fontInfo = JSON.decode(text);
       _tex = new Texture.load(fontInfo["textureUrl"], gl);
       List chars = fontInfo["chars"];
@@ -103,9 +101,7 @@ class FontRenderer {
         charU1[code] = obj["u1"];
         charV1[code] = obj["v1"];
       }
-      _tex.onLoad.then((_) {
-        comp.complete(this);
-      });
+      return _tex.onLoad.then((_) => this);
     });
   }
 
@@ -127,9 +123,7 @@ class FontRenderer {
       charHeights[i] = charHeight.toDouble();
     }
     _tex = tex;
-    Completer comp = new Completer();
-    _onLoad = comp.future;
-    tex.onLoad.then((evt) {
+    _onLoad = tex.onLoad.then((_) {
       double cwidth = charWidth / tex.width;
       double cheight = charHeight / tex.height;
 
@@ -143,7 +137,7 @@ class FontRenderer {
         charU1[i] = charU0[i] + cwidth;
         charV1[i] = charV0[i] + cheight;
       }
-      comp.complete(this);
+      return this;
     });
   }
 

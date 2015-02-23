@@ -188,14 +188,12 @@ class Sound extends PlayableAudio {
     var req = new HttpRequest();
     req.open('GET', path);
     req.responseType = 'arraybuffer';
-    var _loadCompleter = new Completer();
-    _onLoad = _loadCompleter.future;
-    req.onLoad.first.then((evt) {
-      engine.ctx.decodeAudioData(req.response).then((buffer) {
+    _onLoad = req.onLoad.first.then((evt) {
+      return engine.ctx.decodeAudioData(req.response).then((buffer) {
         this.buffer = buffer;
-        _loadCompleter.complete(this);
-      }, onError: (err) => _loadCompleter.completeError(err));
-    }, onError: (err) => _loadCompleter.completeError(err));
+        return this;
+      });
+    });
     req.send();
   }
 
