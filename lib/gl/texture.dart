@@ -62,14 +62,12 @@ class Texture {
    */
   factory Texture.load(String url, WebGL.RenderingContext gl, {bool mipmap: false}) {
     Texture tex = new Texture(null, gl, mipmap: mipmap);
-    Completer<Texture> loadCompleter = new Completer();
-    tex._onLoad = loadCompleter.future;
 
     var img = new ImageElement();
-    img.onLoad.first.then((Event) {
+    tex._onLoad = img.onLoad.first.then((_) {
       tex.bind();
       tex.uploadData(img);
-      loadCompleter.complete(tex);
+      return tex;
     });
     img.src = url;
     return tex;

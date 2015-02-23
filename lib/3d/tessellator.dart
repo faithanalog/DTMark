@@ -72,6 +72,7 @@ class Tessellator extends VertexBatch {
   void begin() {
     super.begin();
     if (!useColor) {
+      //Vertex attribute location 2 is a vec4 storing the current color
       gl.vertexAttrib4f(2, 1.0, 1.0, 1.0, 1.0);
     }
   }
@@ -117,49 +118,42 @@ class Tessellator extends VertexBatch {
     _shader.use();
     _transform.setFrom(_projection);
     _transform.multiply(_modelView);
-    if (geom.transform != null) {
+    if (geom.transform != null)
       _transform.multiply(geom.transform);
-    }
+
     _shader.setUniformMatrix4fv("u_transform", false, _transform);
     _shader.setUniform1i("u_texture", 0);
 
-    if (geom.hasTexture) {
+    if (geom.hasTexture)
       _lastTex.bind();
-    } else {
+    else
       _whiteTex.bind();
-    }
-    if (!geom.hasColor) {
+    
+    //Set color (attribute 2) to white if geometry shouldn't be colored
+    if (!geom.hasColor)
       gl.vertexAttrib4f(2, 1.0, 1.0, 1.0, 1.0);
-    }
+    
     gl.enableVertexAttribArray(0);
-    if (geom.hasTexture) {
+    if (geom.hasTexture)
       gl.enableVertexAttribArray(1);
-    }
-    if (geom.hasColor) {
+    if (geom.hasColor)
       gl.enableVertexAttribArray(2);
-    }
-    if (geom.hasNormals) {
+    if (geom.hasNormals)
       gl.enableVertexAttribArray(3);
-    }
+    
     geom.render();
+    
     gl.disableVertexAttribArray(0);
-    if (geom.hasTexture) {
+    if (geom.hasTexture)
       gl.disableVertexAttribArray(1);
-    }
-    if (geom.hasColor) {
+    if (geom.hasColor)
       gl.disableVertexAttribArray(2);
-    }
-    if (geom.hasNormals) {
+    if (geom.hasNormals)
       gl.disableVertexAttribArray(3);
-    }
   }
 
   set texture(Texture tex) {
-    if (tex == null) {
-      _switchTexture(_whiteTex);
-    } else {
-      _switchTexture(tex);
-    }
+    _switchTexture(tex == null ? _whiteTex : tex);
   }
 
   set useTexture(bool useTex) {
@@ -213,11 +207,7 @@ class Tessellator extends VertexBatch {
    */
   @override
   set shader(Shader shader) {
-    if (shader == null) {
-      _shader = _tessShader;
-    } else {
-      _shader = shader;
-    }
+    _shader = shader == null ? _tessShader : shader;
   }
 
   static Shader _tessShader;

@@ -161,11 +161,7 @@ class SpriteBatch extends VertexBatch {
    */
   @override
   set shader(Shader shader) {
-    if (shader == null) {
-      _shader = _batchShader;
-    } else {
-      _shader = shader;
-    }
+    _shader = shader == null ? _batchShader : shader;
   }
 
   static Shader _batchShader;

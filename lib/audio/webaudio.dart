@@ -90,13 +90,11 @@ class AudioStream extends PlayableAudio {
    * HTML AudioElement which is the source of the audio data
    */
   AudioElement elem;
-  Completer<PlayableAudio> _loadCompleter = new Completer();
+  Future<PlayableAudio> _onLoad;
 
   AudioStream(String path, AudioEngine engine, [String typeOverride = ""]): super(engine) {
     elem = AudioStreaming.loadAudio(path, typeOverride);
-    elem.onCanPlayThrough.first.then((evt) {
-      _loadCompleter.complete(this);
-    });
+    _onLoad = elem.onCanPlayThrough.first.then((_) => this);
   }
 
   @override
@@ -137,7 +135,7 @@ class AudioStream extends PlayableAudio {
 
 
   @override
-  Future<PlayableAudio> get onLoad => _loadCompleter.future;
+  Future<PlayableAudio> get onLoad => _onLoad;
 }
 
 /**
@@ -150,15 +148,15 @@ class Sound extends PlayableAudio {
    * AudioBuffer which is the source of the audio data
    */
   WebAudio.AudioBuffer buffer;
-  Completer<PlayableAudio> _loadCompleter = new Completer();
+  Future<PlayableAudio> _onLoad;
 
   /**
    * Loads the [audioData] for playback
    */
   Sound(ByteBuffer audioData, AudioEngine engine): super(engine) {
-    engine.ctx.decodeAudioData(audioData).then((buffer) {
+    _onLoad = engine.ctx.decodeAudioData(audioData).then((buffer) {
       this.buffer = buffer;
-      _loadCompleter.complete(this);
+      return this;
     });
   }
   
@@ -166,7 +164,7 @@ class Sound extends PlayableAudio {
    * Creates a sound from an existing AudioBuffer
    */
   Sound.fromBuffer(this.buffer, AudioEngine engine): super(engine) {
-    _loadCompleter.complete(this);
+    _onLoad = new Future.value(this);
   }
 
   /**
@@ -190,15 +188,14 @@ class Sound extends PlayableAudio {
     var req = new HttpRequest();
     req.open('GET', path);
     req.responseType = 'arraybuffer';
+    var _loadCompleter = new Completer();
+    _onLoad = _loadCompleter.future;
     req.onLoad.first.then((evt) {
       engine.ctx.decodeAudioData(req.response).then((buffer) {
         this.buffer = buffer;
         _loadCompleter.complete(this);
-      }, onError: (err) {
-        print("Error loading Sound from $path: $err");
-        _loadCompleter.completeError(err);
-      });
-    });
+      }, onError: (err) => _loadCompleter.completeError(err));
+    }, onError: (err) => _loadCompleter.completeError(err));
     req.send();
   }
 
@@ -228,6 +225,6 @@ class Sound extends PlayableAudio {
 
 
   @override
-  Future<PlayableAudio> get onLoad => _loadCompleter.future;
+  Future<PlayableAudio> get onLoad => _onLoad;
 
 }

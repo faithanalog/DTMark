@@ -40,6 +40,9 @@ part 'ui/component.dart';
 part 'ui/event.dart';
 part 'ui/button.dart';
 
+//Other Util
+part 'util/time.dart';
+
 abstract class BaseGame {
 
   static bool touchSupport = null;
@@ -206,14 +209,14 @@ abstract class BaseGame {
       window.animationFrame.then(_renderCallback);
     } else {
       var timer = new Timer.periodic(new Duration(milliseconds: (1 / _timePerFrame).floor()), (timer) {
-        var now = new DateTime.now().millisecondsSinceEpoch;
+        var now = Time.timeMillis;
         _renderCallback(now.toDouble());
       });
       window.onFocus.listen((evt) {
         if (!timer.isActive) {
           timer.cancel();
           timer = new Timer.periodic(new Duration(milliseconds: (1 / _timePerFrame).floor()), (timer) {
-            var now = new DateTime.now().millisecondsSinceEpoch;
+            var now = Time.timeMillis;
             _renderCallback(now.toDouble());
           });
         }
@@ -255,7 +258,7 @@ abstract class BaseGame {
       tick();
     }
     _partialTick = _missedTicks;
-    _frameTime = new DateTime.now().millisecondsSinceEpoch;
+    _frameTime = Time.timeMillis;
     render();
   }
 
@@ -424,9 +427,9 @@ abstract class BaseGame {
  */
 int nextPowerOf2(int val) {
   int powof2 = 1;
-  while (powof2 < val) {
+  while (powof2 < val)
     powof2 <<= 1;
-  }
+  
   return powof2;
 }
 
@@ -434,22 +437,20 @@ int nextPowerOf2(int val) {
  * Sets the VertexAttribArray [array] to be either enabled or disabled based on [active]
  */
 void setVertexAttribArray(WebGL.RenderingContext gl, int array, bool active) {
-  if (active) {
+  if (active)
     gl.enableVertexAttribArray(array);
-  } else {
+  else
     gl.disableVertexAttribArray(array);
-  }
 }
 
 /**
  * Sets the state of something that can be glEnabled or glDisabled to [state]
  */
 void setGLState(WebGL.RenderingContext gl, int glEnum, bool state) {
-  if (state) {
+  if (state)
     gl.enable(glEnum);
-  } else {
+  else
     gl.disable(glEnum);
-  }
 }
 
 class GameMouseEvent {
