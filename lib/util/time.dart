@@ -13,5 +13,5 @@ class Time {
    * 
    * Useful for animations, among other things 
    */
-  double pctDone(int timeMillis, int duration) => (timeMillis % duration) / duration;
+  static double pctDone(int timeMillis, int duration) => (timeMillis % duration) / duration;
 }
