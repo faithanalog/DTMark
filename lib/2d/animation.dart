@@ -60,7 +60,8 @@ class SpriteAnimation {
    * of pixels between each frame in the texture, and default to 0. This padding
    * is assumed to not exist at the edges of the texture. [numFrames] defines
    * the number of frames in the animation. [startFrame] defines the first
-   * frame of the animation.
+   * frame of the animation. Animations are initially stopped, and you must
+   * call [play] on them before the animation will begin.
    */
   SpriteAnimation(int width, int height, int frameDuration, int numFrames,
       Texture animationFrames, {int startFrame: 0, int padX: 0, int padY: 0, bool loop: true}):
