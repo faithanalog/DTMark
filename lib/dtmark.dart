@@ -34,6 +34,7 @@ part '3d/meshrenderer.dart';
 part 'audio/streaming.dart';
 part 'audio/webaudio.dart';
 part 'audio/oscillator.dart';
+part 'audio/generator.dart';
 
 //UI
 part 'ui/component.dart';
