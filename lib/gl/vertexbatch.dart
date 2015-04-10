@@ -39,33 +39,7 @@ class VertexBatch {
    * A 1x1 pixel texture which is white. Used for rendering solid blocks of color
    */
   Texture _whiteTex;
-
-  /**
-   * See constructor for details.
-   */
-  int _reservedTexUnits;
-
-  /**
-   * All textures currently used while rendering
-   */
-  List<Texture> _usedTextures;
-
-  /**
-   * List of textures which have changed since last call to _flush()
-   */
-  List<bool> _changedTextures;
-
-  /**
-   * Next texture unit to use for a call to _switchTexture, stored as
-   * an offset from TEXTURE0 + _reservedTexUnits
-   */
-  int _nextTexUnit = 0;
-
-  /**
-   * Texture unit for the last texture passed to _switchTexture()
-   */
-  int _currentTexUnit = 0;
-
+  Texture _lastTex = null;
 
   /**
    * Color used when rendering anything with the VertexBatch. Changing
@@ -79,33 +53,24 @@ class VertexBatch {
   Matrix4 _modelView = new Matrix4.identity();
   Matrix4 _transform = new Matrix4.identity();
   bool _rendering = false;
+  bool _texChanged = false;
   bool _quadInput = false;
 
   List<VertexAttrib> _attribs = null;
-  int _maxVertSize;
+  int _maxVertSize = 0;
 
   /**
    * Constructs a new VertexBatch which will used the provided attribs
    * if [quadInput] is specified, will draw vertices as if they specify quads,
-   * otherwise it is assumed they are triangles.
-   *
-   * Vertex batches use all available texture units to reduce the number of draw
-   * calls required to draw a batch. Setting [reservedTextureUnits] will reserve
-   * a certain amount of units starting at TEXTURE0 that the batch will not use.
-   * For example, if [reservedTextureUnits] is 2, the first texture used by the
-   * vertex batch will be TEXTURE2.
+   * otherwise it is assumed they are triangles
    */
-  VertexBatch(this.gl, List<VertexAttrib> attribs, {bool quadInput: false, reservedTextureUnits: 0}) {
+  VertexBatch(this.gl, List<VertexAttrib> attribs, {bool quadInput: false}) {
     _shader = null;
     _attribs = attribs;
     _quadInput = quadInput;
-
-    int maxUnits = gl.getParameter(WebGL.MAX_TEXTURE_IMAGE_UNITS);
-    _reservedTexUnits = reservedTextureUnits;
-    _usedTextures = new List<Texture>(maxUnits - _reservedTexUnits);
-    _changedTextures = new List<bool>(_usedTextures.length);
-
-    _maxVertSize = attribs.fold(0, (a, b) => a + b.size);
+    for (var attrib in attribs) {
+      _maxVertSize += attrib.size;
+    }
     _vOffMax = _maxVertSize * BATCH_MAX_VERTS;
     verts = new Float32List(_vOffMax);
 
@@ -133,6 +98,8 @@ class VertexBatch {
 
     _whiteTex = new Texture(null, gl);
     gl.texImage2DTyped(WebGL.TEXTURE_2D, 0, WebGL.RGBA, 1, 1, 0, WebGL.RGBA, WebGL.UNSIGNED_BYTE, new Uint8List.fromList([255, 255, 255, 255]));
+
+    _lastTex = _whiteTex;
   }
 
   /**
@@ -141,19 +108,10 @@ class VertexBatch {
    * already is [tex], then does nothing.
    */
   void _switchTexture(Texture tex) {
-    int index = _usedTextures.indexOf(tex);
-    if (index == -1) {
-      if (_nextTexUnit == _usedTextures.length) {
-        _flush();
-        _usedTextures.fillRange(0, _usedTextures.length, null);
-        _nextTexUnit = 0;
-      }
-      _usedTextures[_nextTexUnit] = tex;
-      _changedTextures[_nextTexUnit] = true;
-      _currentTexUnit = _nextTexUnit + _reservedTexUnits;
-      _nextTexUnit++;
-    } else {
-      _currentTexUnit = index + _reservedTexUnits;
+    if (_lastTex != tex) {
+      _flush();
+      _texChanged = true;
+      _lastTex = tex;
     }
   }
 
@@ -222,12 +180,12 @@ class VertexBatch {
    */
   void begin() {
     _rendering = true;
-    _usedTextures.fillRange(0, _usedTextures.length, null);
-    _nextTexUnit = 0;
+    _texChanged = true;
     _shader.use();
     _transform.setFrom(_projection);
     _transform.multiply(_modelView);
     _shader.setUniformMatrix4fv("u_transform", false, _transform);
+    _shader.setUniform1i("u_texture", 0);
 
     gl.bindBuffer(WebGL.ARRAY_BUFFER, _buffer);
     if (_quadInput) {
@@ -281,13 +239,11 @@ class VertexBatch {
       return;
     }
     if (_vOff > 0) {
-      //Bind all textures used in the batch
-      for (var i = 0; i < _nextTexUnit; i++) {
-        if (_changedTextures[i]) {
-          gl.activeTexture(WebGL.TEXTURE0 + i + _reservedTexUnits);
-          _usedTextures[i].bind();
-          _changedTextures[i] = false;
+      if (_texChanged) {
+        if (_lastTex != null) {
+          _lastTex.bind();
         }
+        _texChanged = false;
       }
       gl.bufferDataTyped(WebGL.ARRAY_BUFFER, new Float32List.view(verts.buffer, 0, _vOff), WebGL.STREAM_DRAW);
       if (_quadInput) {

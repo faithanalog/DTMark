@@ -53,6 +53,7 @@ abstract class BaseGame {
 
   double _timePerFrame;
   double _timePerTick;
+  double _missedFrames = 0.0;
   double _missedTicks = 0.0;
 
   double _lastTime = -1.0;
@@ -429,7 +430,7 @@ int nextPowerOf2(int val) {
   int powof2 = 1;
   while (powof2 < val)
     powof2 <<= 1;
-
+  
   return powof2;
 }
 
