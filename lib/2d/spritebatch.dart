@@ -2,7 +2,7 @@ part of dtmark;
 
 
 /**
- * Function which can take an x, y, and option width/height params to draw an E 
+ * Function which can take an x, y, and option width/height params to draw an E
  */
 typedef void DrawFunc<E>(E t, double x, double y, [double width, double height]);
 
@@ -26,7 +26,8 @@ class SpriteBatch extends VertexBatch {
    */
   SpriteBatch(WebGL.RenderingContext gl, {int width: 1, int height: 1}) : super(gl, [new VertexAttrib(0, 2),
       new VertexAttrib(1, 2),
-      new VertexAttrib(2, 4)], quadInput: true) {
+      new VertexAttrib(2, 4),
+      new VertexAttrib(3, 1)], quadInput: true) {
 
     _shader = getBatchShader(gl);
     _projection = makeOrthographicMatrix(0, width, 0, height, -1, 1);
@@ -46,7 +47,8 @@ class SpriteBatch extends VertexBatch {
     verts[_vOff + 5] = color.g;
     verts[_vOff + 6] = color.b;
     verts[_vOff + 7] = color.a;
-    _vOff += 8;
+    verts[_vOff + 8] = _currentTexUnit.toDouble();
+    _vOff += 9;
   }
 
   //Vertex 0 is top left, Vertex 1 is bottom right
@@ -96,13 +98,13 @@ class SpriteBatch extends VertexBatch {
       height = texRegion.height.toDouble();
     drawTexRegion(texRegion.texture, x, y, width, height, texRegion.x, texRegion.y, texRegion.width, texRegion.height);
   }
-  
+
   /**
    * Repeatedly call [f] to draw it multiple times across the X and Y axis.
    * Drawing starts at ([x],[y]), and continues to
    * ([x] + [w] * ([repeatsX] - 1), [y] + [h] * ([repeatsY] - 1)).
    * [w] and [h] specify the width and height to be provided to [f], as well
-   * as the offset between each call to [f].  
+   * as the offset between each call to [f].
    */
   void drawRepeating(DrawFunc f, dynamic tex, double x, double y, double w, double h, int repeatsX, int repeatsY) {
     for (int col = 0; col < repeatsX; col++) {
@@ -175,8 +177,12 @@ class SpriteBatch extends VertexBatch {
         name: "SpriteBatch Shader", attribLocs: const [
           const AttribLocation(0, "a_position"),
           const AttribLocation(1, "a_texCoord"),
-          const AttribLocation(2, "a_color")
+          const AttribLocation(2, "a_color"),
+          const AttribLocation(3, "a_texture")
         ]);
+      _batchShader.use();
+      gl.uniform1iv(_batchShader.getUniformLoc("u_texture"),
+          new Int32List.fromList(new Iterable.generate(32).toList()));
     }
     return _batchShader;
   }
@@ -191,13 +197,16 @@ uniform mat4 u_transform;
 attribute vec2 a_position;
 attribute vec2 a_texCoord;
 attribute vec4 a_color;
+attribute float a_texture;
 
 varying vec2 v_texCoord;
 varying vec4 v_color;
+varying int  v_texture;
 
 void main() {
   v_texCoord = a_texCoord;
   v_color = a_color;
+  v_texture = int(a_texture);
   gl_Position = u_transform * vec4(a_position, 0.0, 1.0);
 }
 """;
@@ -208,13 +217,14 @@ void main() {
   static const String FRAG_SHADER =
 """
 precision mediump float;
-uniform sampler2D u_texture;
+uniform sampler2D u_texture[32];
 
 varying vec2 v_texCoord;
 varying vec4 v_color;
+varying int  v_texture;
 
 void main() {
-  vec4 color = texture2D(u_texture, v_texCoord) * v_color;
+  vec4 color = texture2D(u_texture[v_texture], v_texCoord) * v_color;
   if (color.a == 0.0) {
     discard;
   }

@@ -19,8 +19,9 @@ class Tessellator extends VertexBatch {
 
   Tessellator(WebGL.RenderingContext gl) : super(gl, [new VertexAttrib(0, 3), //Position
       new VertexAttrib(1, 2), //tex coords
-      new VertexAttrib(2, 4), //color
-      new VertexAttrib(3, 3)] /*normals*/, quadInput: true) {
+      new VertexAttrib(2, 1), //texture unit
+      new VertexAttrib(3, 4), //color
+      new VertexAttrib(4, 3),] /*normals*/, quadInput: true) {
     //Quad input is passed to super() as true, but then immediately set to
     //false. This is because the indices are not generated unless quad input
     //is initially passed in as true, but I want the default mode to be
@@ -44,7 +45,8 @@ class Tessellator extends VertexBatch {
     if (useTexture) {
       verts[_vOff + 0] = u;
       verts[_vOff + 1] = v;
-      _vOff += 2;
+      verts[_vOff + 2] = _currentTexUnit.toDouble();
+      _vOff += 3;
     }
     if (useColor) {
       verts[_vOff + 0] = color.r;
@@ -71,9 +73,14 @@ class Tessellator extends VertexBatch {
   @override
   void begin() {
     super.begin();
+    if (!useTexture) {
+      gl.vertexAttrib1f(2, 0.0);
+      gl.activeTexture(WebGL.TEXTURE0);
+      _whiteTex.bind();
+    }
     if (!useColor) {
       //Vertex attribute location 2 is a vec4 storing the current color
-      gl.vertexAttrib4f(2, 1.0, 1.0, 1.0, 1.0);
+      gl.vertexAttrib4f(3, 1.0, 1.0, 1.0, 1.0);
     }
   }
 
@@ -122,34 +129,40 @@ class Tessellator extends VertexBatch {
       _transform.multiply(geom.transform);
 
     _shader.setUniformMatrix4fv("u_transform", false, _transform);
-    _shader.setUniform1i("u_texture", 0);
 
-    if (geom.hasTexture)
-      _lastTex.bind();
-    else
+    if (geom.hasTexture) {
+      //TODO?
+    } else {
+      gl.vertexAttrib1f(2, 0.0);
+      gl.activeTexture(WebGL.TEXTURE0);
       _whiteTex.bind();
-    
+    }
+
     //Set color (attribute 2) to white if geometry shouldn't be colored
     if (!geom.hasColor)
       gl.vertexAttrib4f(2, 1.0, 1.0, 1.0, 1.0);
-    
+
     gl.enableVertexAttribArray(0);
-    if (geom.hasTexture)
+    if (geom.hasTexture) {
       gl.enableVertexAttribArray(1);
-    if (geom.hasColor)
       gl.enableVertexAttribArray(2);
-    if (geom.hasNormals)
-      gl.enableVertexAttribArray(3);
-    
-    geom.render();
-    
-    gl.disableVertexAttribArray(0);
-    if (geom.hasTexture)
-      gl.disableVertexAttribArray(1);
+    }
     if (geom.hasColor)
-      gl.disableVertexAttribArray(2);
+      gl.enableVertexAttribArray(3);
     if (geom.hasNormals)
+      gl.enableVertexAttribArray(4);
+
+    geom.render();
+
+    gl.disableVertexAttribArray(0);
+    if (geom.hasTexture) {
+      gl.disableVertexAttribArray(1);
+      gl.disableVertexAttribArray(2);
+    }
+    if (geom.hasColor)
       gl.disableVertexAttribArray(3);
+    if (geom.hasNormals)
+      gl.disableVertexAttribArray(4);
   }
 
   set texture(Texture tex) {
@@ -158,25 +171,20 @@ class Tessellator extends VertexBatch {
 
   set useTexture(bool useTex) {
     _attribs[1].active = useTex;
+    _attribs[2].active = useTex;
   }
 
   set useColor(bool useCol) {
-    _attribs[2].active = useCol;
+    _attribs[3].active = useCol;
   }
 
   set useNormals(bool useNorm) {
-    _attribs[3].active = useNorm;
+    _attribs[4].active = useNorm;
   }
 
   set useQuads(bool useQuads) {
     _quadInput = useQuads;
   }
-
-  /**
-   * Texture that will be used when rendering vertices. Setting this
-   * to null will reset it to a 1x1 pixel white texture
-   */
-  Texture get texture => _lastTex;
 
   /**
    * Whether or not texture coordinates should be used
@@ -186,12 +194,12 @@ class Tessellator extends VertexBatch {
   /**
    * Whether or not color should be used. If false, color will default to white
    */
-  bool get useColor => _attribs[2].active;
+  bool get useColor => _attribs[3].active;
 
   /**
    * Whether or not normals should be used
    */
-  bool get useNormals => _attribs[3].active;
+  bool get useNormals => _attribs[4].active;
 
   /**
    * Whether or not the input vertices will be interpreted as quads. If false,
@@ -221,8 +229,12 @@ class Tessellator extends VertexBatch {
         name: "SpriteBatch Shader", attribLocs: const [
           const AttribLocation(0, "a_position"),
           const AttribLocation(1, "a_texCoord"),
-          const AttribLocation(2, "a_color")
+          const AttribLocation(2, "a_color"),
+          const AttribLocation(3, "a_texture")
         ]);
+      _tessShader.use();
+      gl.uniform1iv(_tessShader.getUniformLoc("u_texture"),
+          new Int32List.fromList(new Iterable.generate(32).toList()));
     }
     return _tessShader;
   }
@@ -237,13 +249,16 @@ uniform mat4 u_transform;
 attribute vec3 a_position;
 attribute vec2 a_texCoord;
 attribute vec4 a_color;
+attribute float a_texture;
 
 varying vec2 v_texCoord;
 varying vec4 v_color;
+varying int  v_texture;
 
 void main() {
   v_texCoord = a_texCoord;
   v_color = a_color;
+  v_texture = int(a_texture);
   gl_Position = u_transform * vec4(a_position, 1.0);
 }
 """;
@@ -254,13 +269,14 @@ void main() {
   static const String FRAG_SHADER =
 """
 precision mediump float;
-uniform sampler2D u_texture;
+uniform sampler2D u_texture[32];
 
 varying vec2 v_texCoord;
 varying vec4 v_color;
+varying int  v_texture;
 
 void main() {
-  vec4 color = texture2D(u_texture, v_texCoord) * v_color;
+  vec4 color = texture2D(u_texture[v_texture], v_texCoord) * v_color;
   if (color.a == 0.0) {
     discard;
   }
