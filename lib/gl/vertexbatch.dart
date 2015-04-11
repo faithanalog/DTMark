@@ -231,7 +231,8 @@ class VertexBatch {
     if (_quadInput)
       gl.drawElements(WebGL.TRIANGLES, (_vOff ~/ vertSize ~/ 4 * 6), WebGL.UNSIGNED_SHORT, 0);
     else
-      gl.drawArrays(WebGL.TRIANGLES, 0, (_vOff ~/ vertSize));;
+      gl.drawArrays(WebGL.TRIANGLES, 0, (_vOff ~/ vertSize));
+    _vOff = 0;
   }
 }
 
