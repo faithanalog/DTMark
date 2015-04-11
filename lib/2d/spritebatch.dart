@@ -2,11 +2,11 @@ part of dtmark;
 
 
 /**
- * Function which can take an x, y, and option width/height params to draw an E 
+ * Function which can take an x, y, and optional width/height params to draw an E
  */
 typedef void DrawFunc<E>(E t, double x, double y, [double width, double height]);
 
-//TODO: Add Z index (make it a vert attrib) so that things don't have to be painter's algorithim. good idea? maybe...
+//TODO: Add Z index (make it a vert attrib) so that things don't have to be painter's algorithm. good idea? maybe...
 /**
  * A sprite batcher than will queue up sprites and draw them all in one draw
  * call. Not as effecient as pre-loading vertices to a buffer object,
@@ -16,6 +16,11 @@ typedef void DrawFunc<E>(E t, double x, double y, [double width, double height])
  */
 class SpriteBatch extends VertexBatch {
 
+  //Vertex attribute indices
+  static const int _ATTR_POS      = 0;
+  static const int _ATTR_TEXCOORD = 1;
+  static const int _ATTR_COLOR    = 2;
+
   /**
    * Constructs a new SpriteBatch with the given rendering context [gl].
    * If [width] and [height] are provided, they will be used to create
@@ -24,9 +29,10 @@ class SpriteBatch extends VertexBatch {
    * top right corner. If [width] and [height] are not provided,
    * [projection] should be set manually.
    */
-  SpriteBatch(WebGL.RenderingContext gl, {int width: 1, int height: 1}) : super(gl, [new VertexAttrib(0, 2),
-      new VertexAttrib(1, 2),
-      new VertexAttrib(2, 4)], quadInput: true) {
+  SpriteBatch(WebGL.RenderingContext gl, {int width: 1, int height: 1}) : super(gl,
+      [new VertexAttrib(_ATTR_POS,      2),
+       new VertexAttrib(_ATTR_TEXCOORD, 2),
+       new VertexAttrib(_ATTR_COLOR,    4)], quadInput: true) {
 
     _shader = getBatchShader(gl);
     _projection = makeOrthographicMatrix(0, width, 0, height, -1, 1);
@@ -53,11 +59,10 @@ class SpriteBatch extends VertexBatch {
   /**
    * Adds a quad to the vert buffer with [_addVert].
    * [x0], [y0], [u0], and [v0] refer to the top left corner, while
-   * [x1], [y1], [u1], and [v1] refer tothe bottom right corner.
+   * [x1], [y1], [u1], and [v1] refer to the bottom right corner.
    */
   void _addQuad(double x0, double y0, double u0, double v0, double x1, double y1, double u1, double v1) {
-
-    //NEW: Top left, bottom left, bottom right, top right
+    //Top left, bottom left, bottom right, top right
     _addVert(x0, y0, u0, v0);
     _addVert(x0, y1, u0, v1);
     _addVert(x1, y1, u1, v1);
@@ -96,13 +101,13 @@ class SpriteBatch extends VertexBatch {
       height = texRegion.height.toDouble();
     drawTexRegion(texRegion.texture, x, y, width, height, texRegion.x, texRegion.y, texRegion.width, texRegion.height);
   }
-  
+
   /**
    * Repeatedly call [f] to draw it multiple times across the X and Y axis.
    * Drawing starts at ([x],[y]), and continues to
    * ([x] + [w] * ([repeatsX] - 1), [y] + [h] * ([repeatsY] - 1)).
    * [w] and [h] specify the width and height to be provided to [f], as well
-   * as the offset between each call to [f].  
+   * as the offset between each call to [f].
    */
   void drawRepeating(DrawFunc f, dynamic tex, double x, double y, double w, double h, int repeatsX, int repeatsY) {
     for (int col = 0; col < repeatsX; col++) {
@@ -173,9 +178,9 @@ class SpriteBatch extends VertexBatch {
     if (_batchShader == null) {
       _batchShader = new Shader(VERT_SHADER, FRAG_SHADER, gl,
         name: "SpriteBatch Shader", attribLocs: const [
-          const AttribLocation(0, "a_position"),
-          const AttribLocation(1, "a_texCoord"),
-          const AttribLocation(2, "a_color")
+          const AttribLocation(_ATTR_POS,      "a_position"),
+          const AttribLocation(_ATTR_TEXCOORD, "a_texCoord"),
+          const AttribLocation(_ATTR_COLOR,    "a_color")
         ]);
     }
     return _batchShader;

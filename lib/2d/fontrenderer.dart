@@ -92,14 +92,14 @@ class FontRenderer {
       List chars = fontInfo["chars"];
       size = fontInfo["size"];
       xSpacing = fontInfo["xSpacing"];
-      for (final obj in chars) {
-        int code = obj["charCode"];
-        charWidths[code] = obj["width"];
-        charHeights[code] = obj["height"];
-        charU0[code] = obj["u0"];
-        charV0[code] = obj["v0"];
-        charU1[code] = obj["u1"];
-        charV1[code] = obj["v1"];
+      for (final c in chars) {
+        int code = c["charCode"];
+        charWidths[code] = c["width"];
+        charHeights[code] = c["height"];
+        charU0[code] = c["u0"];
+        charV0[code] = c["v0"];
+        charU1[code] = c["u1"];
+        charV1[code] = c["v1"];
       }
       return _tex.onLoad.then((_) => this);
     });
@@ -240,10 +240,7 @@ AB1AOTqANQBAAAQACIAAANABlKMDWAMABEAAgAAIAOAZ+AOg2b+6t+iJHQAAAABJRU5ErkJggg==
    * Gets the width of the string in pixels multiplied by the current scale
    */
   double getWidth(String str) {
-    double w = 0.0;
-    for (final code in str.codeUnits) {
-      w += charWidths[code];
-    }
+    double w = str.codeUnits.fold(0.0, (a, code) => a + charWidths[code]);
     return (w + xSpacing * str.length) * scale;
   }
 
@@ -261,9 +258,8 @@ AB1AOTqANQBAAAQACIAAANABlKMDWAMABEAAgAAIAOAZ+AOg2b+6t+iJHQAAAABJRU5ErkJggg==
    */
   void drawString(SpriteBatch batch, String str, double x, double y) {
     for (final code in str.codeUnits) {
-      if (code >= 256) {
+      if (code >= 256)
         continue;
-      }
       _drawChar(batch, code, x, y);
       x += (charWidths[code] + xSpacing) * scale;
     }

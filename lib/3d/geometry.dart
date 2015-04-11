@@ -33,9 +33,12 @@ class Geometry {
 
   int get vertSize {
     int size = 3;
-    if (hasTexture) size += 2;
-    if (hasColor) size += 4;
-    if (hasNormals) size += 3;
+    if (hasTexture)
+      size += 2;
+    if (hasColor)
+      size += 4;
+    if (hasNormals)
+      size += 3;
     return size;
   }
 

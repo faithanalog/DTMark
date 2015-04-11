@@ -51,9 +51,8 @@ class Framebuffer {
    */
   void bind({bool setViewport: true}) {
     gl.bindFramebuffer(WebGL.FRAMEBUFFER, _glFbo);
-    if (setViewport) {
+    if (setViewport)
       gl.viewport(0, 0, width, height);
-    }
   }
 
   /**

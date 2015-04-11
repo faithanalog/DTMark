@@ -90,10 +90,10 @@ abstract class Component {
   Container _parent = null;
 
   StreamController<MouseDownEvent> _mouseDownController = new StreamController();
-  StreamController<MouseUpEvent> _mouseUpController = new StreamController();
+  StreamController<MouseUpEvent>   _mouseUpController   = new StreamController();
   StreamController<MouseMoveEvent> _mouseMoveController = new StreamController();
-  StreamController<KeyDownEvent> _keyDownController = new StreamController();
-  StreamController<KeyUpEvent> _keyUpController = new StreamController();
+  StreamController<KeyDownEvent>   _keyDownController   = new StreamController();
+  StreamController<KeyUpEvent>     _keyUpController     = new StreamController();
 
   /**
    * Stream of mouseDown events
@@ -255,7 +255,8 @@ class Container extends Component {
     super._mouseDown(evt);
     focus = null;
     for (final child in _children) {
-      int cx = evt.x - child.x, cy = evt.y - child.y;
+      var cx = evt.x - child.x;
+      var cy = evt.y - child.y;
       if (child.containsPoint(cx, cy)) {
         focus = child;
         child._mouseDown(new MouseDownEvent(child, cx, cy, evt.button));
@@ -268,7 +269,8 @@ class Container extends Component {
   void _mouseUp(MouseUpEvent evt) {
     super._mouseUp(evt);
     for (final child in _children) {
-      int cx = evt.x - child.x, cy = evt.y - child.y;
+      var cx = evt.x - child.x;
+      var cy = evt.y - child.y;
       if (child.containsPoint(cx, cy)) {
         child._mouseUp(new MouseUpEvent(child, cx, cy, evt.button));
       }
@@ -279,7 +281,8 @@ class Container extends Component {
   void _mouseMove(MouseMoveEvent evt) {
     super._mouseMove(evt);
     for (final child in _children) {
-      int cx = evt.x - child.x, cy = evt.y - child.y;
+      var cx = evt.x - child.x;
+      var cy = evt.y - child.y;
       if (child.containsPoint(cx, cy)) {
         child._mouseMove(new MouseMoveEvent(child, cx, cy));
       }
@@ -289,17 +292,15 @@ class Container extends Component {
   @override
   void _keyDown(KeyDownEvent evt) {
     super._keyDown(evt);
-    if (focus != null) {
+    if (focus != null)
       focus._keyDown(new KeyDownEvent(focus, evt.key));
-    }
   }
 
   @override
   void _keyUp(KeyUpEvent evt) {
     super._keyUp(evt);
-    if (focus != null) {
+    if (focus != null)
       focus._keyUp(new KeyUpEvent(focus, evt.key));
-    }
   }
 
   /**
@@ -350,33 +351,28 @@ class RootPanel extends Container {
     game.onMouseDown.listen((evt) {
       _mouseX = evt.x ~/ scale;
       _mouseY = evt.y ~/ scale;
-      if (active) {
+      if (active)
         _mouseDown(new MouseDownEvent(this, _mouseX, _mouseY, evt.button));
-      }
     });
     game.onMouseUp.listen((evt) {
       _mouseX = evt.x ~/ scale;
       _mouseY = evt.y ~/ scale;
-      if (active) {
+      if (active)
         _mouseUp(new MouseUpEvent(this, _mouseX, _mouseY, evt.button));
-      }
     });
     game.onMouseMove.listen((evt) {
       _mouseX = evt.x ~/ scale;
       _mouseY = evt.y ~/ scale;
-      if (active) {
+      if (active)
         _mouseMove(new MouseMoveEvent(this, _mouseX, _mouseY));
-      }
     });
     game.onKeyDown.listen((evt) {
-      if (active) {
+      if (active)
         _keyDown(new KeyDownEvent(this, evt.key));
-      }
     });
     game.onKeyUp.listen((evt) {
-      if (active) {
+      if (active)
         _keyUp(new KeyUpEvent(this, evt.key));
-      }
     });
   }
 
@@ -384,7 +380,9 @@ class RootPanel extends Container {
    * Renders the UI
    */
   void renderAll() {
-    batch.projection = makeOrthographicMatrix(0, game.canvas.width / scale, 0, game.canvas.height / scale, -1, 1);
+    batch.projection = makeOrthographicMatrix(0, game.canvas.width / scale,
+                                              0, game.canvas.height / scale,
+                                             -1, 1);
     render(batch);
   }
 

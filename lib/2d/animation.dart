@@ -34,11 +34,11 @@ class SpriteAnimation {
    * Texture regions for the frames used in the animation.
    */
   List<TextureRegion> frames;
-  
+
   /**
    * Number of frames in the animation
    */
-  int get numFrames => frames.length; 
+  int get numFrames => frames.length;
 
   //When the animation was started
   int _animStart = 0;
@@ -48,7 +48,7 @@ class SpriteAnimation {
 
   //Is the animation playing
   bool _playing = false;
-  
+
   SpriteAnimation.fromRegions(this.width, this.height, this.frameDuration,
       this.animationFrames, this.frames, {this.loop: true});
 
@@ -68,7 +68,7 @@ class SpriteAnimation {
     this.withFrames(width, height, frameDuration,
         new Iterable.generate(numFrames, (x) => x + startFrame), //Frames startFrame to (startFrame + numFrames - 1)
         animationFrames, padX: padX, padY: padY, loop: loop);
-  
+
   SpriteAnimation.withFrames(this.width, this.height, this.frameDuration, Iterable<int> frameList,
       this.animationFrames, {int padX: 0, int padY: 0, this.loop: true}) {
     frames = [new TextureRegion(animationFrames, 0, 0, width, height)];
@@ -122,9 +122,8 @@ class SpriteAnimation {
    */
   void setFrame(int frame) {
     _savedFrame = frame;
-    if (_playing) {
+    if (_playing)
       play(); //Fix up the _animStart time
-    }
   }
 
   /**
@@ -136,13 +135,10 @@ class SpriteAnimation {
     } else {
       int time = BaseGame.frameTime - _animStart;
       int duration = numFrames * frameDuration;
-      int frame;
-      if (loop) {
-        frame = (numFrames * (time % duration)) ~/ duration;
-      } else {
-        frame = Math.min(numFrames - 1, (numFrames * time) ~/ duration);
-      }
-      return frame;
+      if (loop)
+        return (numFrames * (time % duration)) ~/ duration;
+      else
+        return Math.min(numFrames - 1, (numFrames * time) ~/ duration);
     }
   }
 

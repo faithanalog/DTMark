@@ -97,8 +97,10 @@ class Texture {
     if (data == null) {
       _width = 1;
       _height = 1;
-      gl.texImage2DTyped(WebGL.TEXTURE_2D, 0, WebGL.RGBA, 1, 1, 0, WebGL.RGBA, WebGL.UNSIGNED_BYTE, new Uint8List.fromList([0, 0, 0, 255]));
+      gl.texImage2DTyped(WebGL.TEXTURE_2D, 0, WebGL.RGBA, 1, 1, 0, WebGL.RGBA,
+        WebGL.UNSIGNED_BYTE, new Uint8List.fromList([0, 0, 0, 255]));
     } else {
+      //Evil code dupe but necessary because of dart's type system
       if (data is ImageElement) {
         setSize(data.width, data.height);
         gl.texSubImage2DImage(WebGL.TEXTURE_2D, 0, 0, 0, WebGL.RGBA, WebGL.UNSIGNED_BYTE, data);
@@ -109,9 +111,8 @@ class Texture {
         setSize(data.width, data.height);
         gl.texSubImage2DVideo(WebGL.TEXTURE_2D, 0, 0, 0, WebGL.RGBA, WebGL.UNSIGNED_BYTE, data);
       }
-      if (_mipmap) {
+      if (_mipmap)
         gl.generateMipmap(WebGL.TEXTURE_2D);
-      }
     }
   }
 
@@ -124,7 +125,8 @@ class Texture {
     if (this._width != width || this._height != height) {
       this._width = width;
       this._height = height;
-      gl.texImage2DTyped(WebGL.TEXTURE_2D, 0, WebGL.RGBA, width, height, 0, WebGL.RGBA, WebGL.UNSIGNED_BYTE, null);
+      gl.texImage2DTyped(WebGL.TEXTURE_2D, 0, WebGL.RGBA, width, height, 0,
+        WebGL.RGBA, WebGL.UNSIGNED_BYTE, null);
     }
   }
 
@@ -265,7 +267,7 @@ class Texture {
 }
 
 /**
- * Defines a region of a texture to be used for drawing later
+ * Defines a region of a texture to be used with a SpriteBatch for drawing
  */
 class TextureRegion {
 

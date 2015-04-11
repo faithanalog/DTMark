@@ -36,9 +36,8 @@ class Oscillator extends PlayableAudio {
     var src = createSource();
     src.connectNode(engine.dest);
     src.start(when);
-    if (duration > 0) {
+    if (duration > 0)
       src.stop(when + duration);
-    }
     return src;
   }
 
@@ -68,7 +67,7 @@ class CustomOscillator extends Oscillator {
    * coeffecients for the reverse fourrier transform (maybe?).
    */
   CustomOscillator(Float32List real, Float32List imag, int freq, AudioEngine engine,
-    {num duration: -1}):super("custom", freq, engine, duration: duration) {
+    {num duration: -1}): super("custom", freq, engine, duration: duration) {
       wave = engine.ctx.createPeriodicWave(real, imag);
     }
 

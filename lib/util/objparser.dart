@@ -17,43 +17,46 @@ class WavefrontParser {
       if (line.startsWith("#")) {
         continue; //Comment line
       } else {
-        var args = line.split(" ");
-        var type = args[0];
-        if (type == "o") {
+        var split = line.split(" ");
+        var type = split.first;
+        var args = split.skip(1);
+        switch (type) {
+        case "o":
           if (!curObj.positions.isEmpty) {
             objects.add(curObj);
           }
           curObj = new WavefrontObject();
-        } else if (type == "v") {
+          break;
+        case "v":
           curObj.positions.add(_parseVec3(args));
-        } else if (type == "vt") {
+          break;
+        case "vt":
           curObj.texCoords.add(_parseVec2(args));
-        } else if (type == "vn") {
+          break;
+        case "vn":
           curObj.normals.add(_parseVec3(args));
-        } else if (type == "f") {
+          break;
+        case "f":
           curObj.faces.add(new WavefrontFace._parse(args));
+          break;
         }
       }
     }
-    if (!curObj.positions.isEmpty) {
+    if (!curObj.positions.isEmpty)
       objects.add(curObj);
-    }
   }
 
-  Vector3 _parseVec3(List<String> args) {
-    return new Vector3(double.parse(args[1]), double.parse(args[2]), double.parse(args[3]));
-  }
+  Vector3 _parseVec3(Iterable<String> args) => new Vector3.array(args.map(double.parse).toList());
 
-  Vector2 _parseVec2(List<String> args) {
-    return new Vector2(double.parse(args[1]), double.parse(args[2]));
-  }
+  Vector2 _parseVec2(Iterable<String> args) => new Vector2.array(args.map(double.parse).toList());
+
 }
 
 class WavefrontObject {
   String name = "";
-  List<Vector3> positions = new List();
-  List<Vector3> normals = new List();
-  List<Vector2> texCoords = new List();
+  List<Vector3> positions   = new List();
+  List<Vector3> normals     = new List();
+  List<Vector2> texCoords   = new List();
   List<WavefrontFace> faces = new List();
 }
 
@@ -66,42 +69,37 @@ class WavefrontFace {
   bool hasNormal = false;
   bool quad = false;
 
-  WavefrontFace._parse(List<String> args) {
-    if (args.length >= 5) {
-      quad = true;
-    }
+  WavefrontFace._parse(Iterable<String> args) {
+    quad = args.length >= 4;
 
-    pos = new Uint32List(args.length - 1);
+    pos = new Uint32List(args.length);
 
-    if (args[1].contains("//")) {
+    if (args.first.contains("//")) {
       hasNormal = true;
       norm = new Uint32List(pos.length);
-
-    } else if (new RegExp(r"(.*)/(.*)/(.*)").hasMatch(args[1])) {
+    } else if (new RegExp(r"(.*)/(.*)/(.*)").hasMatch(args.first)) {
       hasNormal = true;
       hasTexture = true;
       norm = new Uint32List(pos.length);
       tex = new Uint32List(pos.length);
-    } else if (new RegExp(r"(.*)/(.*)").hasMatch(args[1])) {
+    } else if (new RegExp(r"(.*)/(.*)").hasMatch(args.first)) {
       hasTexture = true;
       tex = new Uint32List(pos.length);
     }
 
-    for (int i = 0; i < pos.length; i++) {
-      _parseVert(args[i + 1], i);
+    int i = 0;
+    for (final vert in args) {
+      _parseVert(vert, i);
+      i++;
     }
   }
 
   void _parseVert(String vert, int index) {
-    var args = vert.split(new RegExp("//?"));
-    pos[index] = int.parse(args[0]);
-    if (hasTexture) {
-      tex[index] = int.parse(args[1]);
-      if (hasNormal) {
-        norm[index] = int.parse(args[2]);
-      }
-    } else {
-      norm[index] = int.parse(args[1]);
-    }
+    var args = vert.split(new RegExp(r"//?")).map(int.parse);
+    pos[index] = args[0];
+    if (hasTexture)
+      tex[index] = args[1];
+    if (hasNormal)
+      norm[index] = args[hasTexture ? 2 : 1];
   }
 }

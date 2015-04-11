@@ -6,38 +6,38 @@ part of dtmark;
 typedef double AudioGeneratorFunc(double t, int channel);
 
 class AudioGenerator extends PlayableAudio {
-  
+
   /**
    * Generator function used to generate audio data
    */
   AudioGeneratorFunc gen;
-  
+
   /**
    * Buffer size when creating processors. Leave null for default
    */
   int bufferSize;
-  
+
   /**
    * Number of output channels
    */
   int channels;
-  
+
   /**
    * Duration. Null duration implies that it plays indefinitely.
    */
   double duration;
-  
+
   AudioGenerator(AudioEngine engine, this.gen, {this.channels: 1, this.bufferSize: null, this.duration: null}): super(engine);
 
   @override
   WebAudio.AudioSourceNode createSource() {
     var src = engine.ctx.createScriptProcessor(bufferSize, 0, channels);
-    
+
     //onaudioprocess doesn't exist for some reason.
     src.on['audioprocess'].listen((WebAudio.AudioProcessingEvent evt) {
       var out = evt.outputBuffer;
       var timeStep = 1 / out.sampleRate;
-      
+
       for (var c = 0; c < out.numberOfChannels; c++) {
         var chan = out.getChannelData(c);
         for (var s = 0; s < chan.length; s++) {
@@ -46,7 +46,7 @@ class AudioGenerator extends PlayableAudio {
         }
       }
     });
-    
+
 
     return src;
   }
@@ -56,9 +56,8 @@ class AudioGenerator extends PlayableAudio {
     var src = createSource();
     src.connectNode(engine.dest);
     src.start(when);
-    if (duration != null) {
+    if (duration != null)
       src.stop(when + duration);
-    }
     return src;
   }
 
@@ -69,5 +68,5 @@ class AudioGenerator extends PlayableAudio {
     src.start(when);
     return src;
   }
-  
+
 }

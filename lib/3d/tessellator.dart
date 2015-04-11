@@ -78,9 +78,8 @@ class Tessellator extends VertexBatch {
   @override
   void begin() {
     super.begin();
-    if (!useColor) {
+    if (!useColor)
       gl.vertexAttrib4f(_ATTR_COLOR, 1.0, 1.0, 1.0, 1.0);
-    }
   }
 
   /**
@@ -108,12 +107,11 @@ class Tessellator extends VertexBatch {
     _vOff = 0;
     Geometry geom = new Geometry(gl, geomVerts);
     geom.hasTexture = useTexture;
-    geom.hasColor = useColor;
+    geom.hasColor   = useColor;
     geom.hasNormals = useNormals;
-    geom.transform = modelView.clone();
-    if (bakeModelView) {
+    geom.transform  = modelView.clone();
+    if (bakeModelView)
       geom.bakeTransform();
-    }
     return geom;
   }
 
@@ -224,9 +222,9 @@ class Tessellator extends VertexBatch {
     if (_tessShader == null) {
       _tessShader = new Shader(VERT_SHADER, FRAG_SHADER, gl,
         name: "SpriteBatch Shader", attribLocs: const [
-          const AttribLocation(_ATTR_POS, "a_position"),
+          const AttribLocation(_ATTR_POS,      "a_position"),
           const AttribLocation(_ATTR_TEXCOORD, "a_texCoord"),
-          const AttribLocation(_ATTR_COLOR, "a_color")
+          const AttribLocation(_ATTR_COLOR,    "a_color")
         ]);
     }
     return _tessShader;

@@ -33,9 +33,7 @@ class AudioStreaming {
    */
   static AudioElement loadAndPlayAudio(String path, [String typeOverride = ""]) {
     var elem = loadAudio(path, typeOverride);
-    elem.onCanPlayThrough.first.then((evt) {
-      elem.play();
-    });
+    elem.onCanPlayThrough.first.then((_) => elem.play());
     return elem;
   }
 }

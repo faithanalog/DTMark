@@ -116,17 +116,13 @@ class AudioStream extends PlayableAudio {
   WebAudio.MediaElementAudioSourceNode _playAtTime(bool loop, num when) {
     var src = createSource();
     src.connectNode(engine.dest);
-    if (elem.currentTime > 0) {
+    if (elem.currentTime > 0)
       elem.currentTime = 0;
-    }
     elem.loop = loop;
     if (when > 0) {
       int offs = ((when - engine.time) * 1000).toInt();
-      if (offs > 0) {
-        new Timer(new Duration(milliseconds: offs), () {
-          elem.play();
-        });
-      }
+      if (offs > 0)
+        new Timer(new Duration(milliseconds: offs), elem.play);
     } else {
       elem.play();
     }
@@ -159,7 +155,7 @@ class Sound extends PlayableAudio {
       return this;
     });
   }
-  
+
   /**
    * Creates a sound from an existing AudioBuffer
    */

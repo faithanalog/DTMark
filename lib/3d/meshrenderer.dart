@@ -32,6 +32,8 @@ abstract class MeshRenderer {
  */
 class BasicMeshRenderer extends MeshRenderer {
 
+  //TODO clean up this class
+
   bool _blend = false;
   int _blendSrc = WebGL.SRC_ALPHA;
   int _blendDst = WebGL.ONE_MINUS_SRC_ALPHA;
@@ -47,7 +49,7 @@ class BasicMeshRenderer extends MeshRenderer {
   Matrix4 _transform = new Matrix4.identity();
 
   //Identity matrix, should not be modified
-  Matrix4 _ident = new Matrix4.identity();
+  final Matrix4 _ident = new Matrix4.identity();
 
   /**
    * A 1x1 pixel texture which is white. Used for rendering solid blocks of color
@@ -92,17 +94,19 @@ class BasicMeshRenderer extends MeshRenderer {
     gl.disable(WebGL.BLEND);
     gl.disable(WebGL.DEPTH_TEST);
     gl.disableVertexAttribArray(0);
-    if (_texEnabled) gl.disableVertexAttribArray(1);
-    if (_colEnabled) gl.disableVertexAttribArray(2);
-    if (_normEnabled) gl.disableVertexAttribArray(3);
+    if (_texEnabled)
+      gl.disableVertexAttribArray(1);
+    if (_colEnabled)
+      gl.disableVertexAttribArray(2);
+    if (_normEnabled)
+      gl.disableVertexAttribArray(3);
   }
 
   @override
   void renderMesh(Mesh mesh) {
     var material = mesh.material;
-    if (!material.visible) {
+    if (!material.visible)
       return;
-    }
     if (_blend != material.blend) {
       _blend = material.blend;
       setGLState(gl, WebGL.BLEND, _blend);
@@ -128,11 +132,11 @@ class BasicMeshRenderer extends MeshRenderer {
       var meshTransform = new Matrix4.rotationX(rot.x).rotateY(rot.y).rotateZ(rot.z);
       _shader.setUniformMatrix4fv("u_transform", false, _transform * meshTransform);
     }
-    if (material.texture == null) {
+    if (material.texture == null)
       _switchTexture(_whiteTex);
-    } else {
+    else
       _switchTexture(material.texture);
-    }
+
     _renderGeometry(mesh.geometry);
 
     for (final child in mesh.children) {
@@ -148,7 +152,8 @@ class BasicMeshRenderer extends MeshRenderer {
   }
 
   void _renderGeometry(Geometry geom) {
-    _shader.setUniformMatrix4fv("u_geomTransform", false, geom.transform == null ? _ident : geom.transform);
+    _shader.setUniformMatrix4fv("u_geomTransform", false,
+      geom.transform == null ? _ident : geom.transform);
 
     if (geom.hasTexture != _texEnabled) {
       _texEnabled = geom.hasTexture;
@@ -158,9 +163,8 @@ class BasicMeshRenderer extends MeshRenderer {
     if (geom.hasColor != _colEnabled) {
       _colEnabled = geom.hasColor;
       setVertexAttribArray(gl, 2, _colEnabled);
-      if (!_colEnabled) {
+      if (!_colEnabled)
         gl.vertexAttrib4f(2, 1.0, 1.0, 1.0, 1.0);
-      }
     }
 
     if (geom.hasNormals != _normEnabled) {
@@ -175,27 +179,24 @@ class BasicMeshRenderer extends MeshRenderer {
   }
 
   set projection(Matrix4 proj) {
-    if (proj == null) {
+    if (proj == null)
       _projection = new Matrix4.identity();
-    } else {
+    else
       _projection = proj;
-    }
   }
 
   set modelView(Matrix4 mview) {
-    if (mview == null) {
+    if (mview == null)
       _modelView = new Matrix4.identity();
-    } else {
+    else
       _modelView = mview;
-    }
   }
 
   set shader(Shader shader) {
-    if (shader == null) {
+    if (shader == null)
       _shader = _meshShader;
-    } else {
+    else
       _shader = shader;
-    }
   }
 
   /**

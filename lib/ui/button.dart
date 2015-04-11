@@ -26,9 +26,8 @@ class Button extends TextComponent {
   @override
   void render(SpriteBatch batch) {
     bool hasMouse = containsMouse();
-    if (_clicked && !hasMouse) {
+    if (_clicked && !hasMouse)
       _clicked = false;
-    }
 
     font.scale = fontSize / font.size;
     batch.begin();

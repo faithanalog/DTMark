@@ -88,11 +88,11 @@ abstract class BaseGame {
    * Controllers for all event streams
    * This is very similar to the UI event stuff, and uses similar events
    */
-  StreamController<GameMouseEvent> _mouseDownController = new StreamController();
-  StreamController<GameMouseEvent> _mouseUpController = new StreamController();
-  StreamController<GameMouseEvent> _mouseMoveController = new StreamController();
+  StreamController<GameMouseEvent> _mouseDownController  = new StreamController();
+  StreamController<GameMouseEvent> _mouseUpController    = new StreamController();
+  StreamController<GameMouseEvent> _mouseMoveController  = new StreamController();
   StreamController<GameKeyboardEvent> _keyDownController = new StreamController();
-  StreamController<GameKeyboardEvent> _keyUpController = new StreamController();
+  StreamController<GameKeyboardEvent> _keyUpController   = new StreamController();
 
   /**
    * Whether or not to invert Y values from what they are provided as in the event.
@@ -116,9 +116,8 @@ abstract class BaseGame {
     _useAnimFrame = useAnimFrame;
     _useDeltaTime = useDeltaTime;
 
-    if (touchSupport == null) {
+    if (touchSupport == null)
       touchSupport = new JsObject.fromBrowserObject(window).hasProperty("ontouchstart");
-    }
 
     if (!touchSupport) {
       _subscribeMouseAndKeyEvents();
@@ -143,7 +142,7 @@ abstract class BaseGame {
       //There's no reliable way to detect presence of mouse hardware,
       //so if we receive a mouse move event we assume the user
       //has a mouse and disable the built-in touch support.
-      canvas.onMouseMove.first.then((evt) {
+      canvas.onMouseMove.first.then((_) {
         tStart.cancel();
         tEnd.cancel();
         tMove.cancel();
@@ -208,45 +207,39 @@ abstract class BaseGame {
     if (_useAnimFrame) {
       window.animationFrame.then(_renderCallback);
     } else {
-      var timer = new Timer.periodic(new Duration(milliseconds: (1 / _timePerFrame).floor()), (timer) {
-        var now = Time.timeMillis;
-        _renderCallback(now.toDouble());
-      });
-      window.onFocus.listen((evt) {
+      var timer;
+      void startNewTimer() {
+        var duration = new Duration(milliseconds: (1 / _timePerFrame).floor());
+        timer = new Timer.periodic(duration,
+          (_) => _renderCallback(Time.timeMillis.toDouble()));
+      }
+      startNewTimer();
+      window.onFocus.listen((_) {
         if (!timer.isActive) {
           timer.cancel();
-          timer = new Timer.periodic(new Duration(milliseconds: (1 / _timePerFrame).floor()), (timer) {
-            var now = Time.timeMillis;
-            _renderCallback(now.toDouble());
-          });
+          startNewTimer();
         }
       });
-      window.onBlur.listen((evt) {
-        timer.cancel();
-      });
+      window.onBlur.listen((_) => timer.cancel());
     }
   }
 
   void _renderCallback(double time) {
-    if (_useAnimFrame) {
+    if (_useAnimFrame)
       window.animationFrame.then(_renderCallback);
-    }
-    if (_lastTime == -1) {
+    if (_lastTime == -1)
       _lastTime = time;
-    }
     double dif = time - _lastTime;
     //Missed more than a second just do 1 calc
-    if (dif > 1000.0) {
+    if (dif > 1000.0)
       _missedTicks++;
-    } else {
+    else
       _missedTicks += dif * _timePerTick;
-    }
     _lastTime = time;
 
     //Don't tolerate more than 10 ticks missed
-    if (_missedTicks > 10) {
+    if (_missedTicks > 10)
       _missedTicks = 10.0;
-    }
     _deltaTime = 1.0;
     while (_missedTicks >= 1.0) {
       tick();
@@ -288,12 +281,19 @@ abstract class BaseGame {
     _keyUpController.add(new GameKeyboardEvent(key));
   }
 
+  /**
+   * Invert the Y coordinate if [invertMouseY] is set
+   */
+  int _invertIfNeeded(int y) {
+    if (invertMouseY)
+      return (canvas.height * mousePosScale).toInt() - y - 1;
+    else
+      return y;
+  }
+
   void _onMouseDown(int x, int y, int btn) {
     _mouseX = x;
-    _mouseY = y;
-    if (invertMouseY) {
-      _mouseY = (canvas.height * mousePosScale).toInt() - _mouseY - 1;
-    }
+    _mouseY = _invertIfNeeded(y);
     _mouseButtons[btn] = 1;
     mouseDown(_mouseX, _mouseY, btn);
     _mouseDownController.add(new GameMouseEvent(_mouseX, _mouseY, btn));
@@ -301,10 +301,7 @@ abstract class BaseGame {
 
   void _onMouseUp(int x, int y, int btn) {
     _mouseX = x;
-    _mouseY = y;
-    if (invertMouseY) {
-      _mouseY = (canvas.height * mousePosScale).toInt() - _mouseY - 1;
-    }
+    _mouseY = _invertIfNeeded(y);
     _mouseButtons[btn] = 0;
     mouseUp(_mouseX, _mouseY, btn);
     _mouseUpController.add(new GameMouseEvent(_mouseX, _mouseY, btn));
@@ -312,10 +309,7 @@ abstract class BaseGame {
 
   void _onMouseMove(int x, int y) {
     _mouseX = x;
-    _mouseY = y;
-    if (invertMouseY) {
-      _mouseY = (canvas.height * mousePosScale).toInt() - _mouseY - 1;
-    }
+    _mouseY = _invertIfNeeded(y);
     mouseMove(x, y);
     _mouseMoveController.add(new GameMouseEvent(_mouseX, _mouseY, -1));
   }
@@ -429,7 +423,6 @@ int nextPowerOf2(int val) {
   int powof2 = 1;
   while (powof2 < val)
     powof2 <<= 1;
-
   return powof2;
 }
 
