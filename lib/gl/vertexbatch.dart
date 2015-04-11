@@ -68,9 +68,7 @@ class VertexBatch {
     _shader = null;
     _attribs = attribs;
     _quadInput = quadInput;
-    for (var attrib in attribs) {
-      _maxVertSize += attrib.size;
-    }
+    _maxVertSize = attribs.fold(0, (a, b) => a + b.size);
     _vOffMax = _maxVertSize * BATCH_MAX_VERTS;
     verts = new Float32List(_vOffMax);
 
