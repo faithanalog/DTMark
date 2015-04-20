@@ -14,3 +14,4 @@ packages
 .pub/
 pubspec.lock
 *.swp
+.settings

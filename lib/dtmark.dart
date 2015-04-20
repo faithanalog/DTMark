@@ -8,6 +8,7 @@ import 'dart:web_gl' as WebGL;
 import 'dart:web_audio' as WebAudio;
 import 'dart:async';
 import 'dart:js';
+import 'package:collection/iterable_zip.dart';
 import 'package:vector_math/vector_math.dart';
 import 'package:browser_detect/browser_detect.dart' as BrowserDetect;
 
