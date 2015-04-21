@@ -15,17 +15,15 @@ class WavefrontParser {
     //Split on lines beginning with 'o' to get object chunks
     //Split each of those chunks into lines
     var objLines = normalized.split(new RegExp(r"\no.*\n", multiLine: true))
-                             .where((obj) => obj.isNotEmpty)
                              .map((obj) => obj.split(new RegExp(r"\r?\n")));
     
     //Names of each seperate object. If it's empty, use a single list name of ""
     var objNames = new RegExp(r"o (.*)").allMatches(normalized)
                                          .map((m) => m.group(1));
-    if (objNames.isEmpty)
-      objNames = [""];
     
-    return new IterableZip([objLines, objNames])
-                 .map((x) => parseObj(x[0], x[1])).toList();
+    var toZip = objNames.isEmpty ? new IterableZip([objLines, [""]])
+                                 : new IterableZip([objLines.skip(1), objNames]);
+    return toZip.map((x) => parseObj(x[0], x[1])).toList();
   }
   
   static WavefrontObject parseObj(List<String> lines, String name) {
@@ -33,10 +31,10 @@ class WavefrontParser {
     
     ofType(String prefix) => ((line) => line.startsWith(prefix));
     obj.name      = name;
-    obj.positions = lines.where(ofType("v")).map(_parseVec3);
-    obj.texCoords = lines.where(ofType("vt")).map(_parseVec2);
-    obj.normals   = lines.where(ofType("vn")).map(_parseVec3);
-    obj.faces     = lines.where(ofType("f")).map(_parseFace);
+    obj.positions = lines.where(ofType("v " )).map(_parseVec3).toList();
+    obj.texCoords = lines.where(ofType("vt ")).map(_parseVec2).toList();
+    obj.normals   = lines.where(ofType("vn ")).map(_parseVec3).toList();
+    obj.faces     = lines.where(ofType("f " )).map(_parseFace).toList();
     
     return obj;
   }
