@@ -51,12 +51,15 @@ part 'src/util/time.dart';
 abstract class BaseGame {
 
   static bool _touchSupport = null;
+  static bool get touchSupport => _touchSupport;
 
   /**
    * Set this to true to use window.onTouchX instead of canvas.onTouchX.
    * May be required by some technologies such as CocoonJS
    */
   static bool useWindowTouchEvents = false;
+
+
 
   CanvasElement canvas;
   WebGL.RenderingContext gl;
