@@ -69,7 +69,7 @@ class WavefrontParser {
     _tryRegex(posNormPatt,     2, -1),
     _tryRegex(posNormTexPatt,  2,  3),
     _tryRegex(posTexPatt,     -1,  2),
-    _tryRegex(posPatt,       - 1, -1)
+    _tryRegex(posPatt,        -1, -1)
   ];
   
   static WavefrontIndex _parseIndex(String faceArg) =>

@@ -13,37 +13,40 @@ import 'package:vector_math/vector_math.dart';
 import 'package:browser_detect/browser_detect.dart' as BrowserDetect;
 
 //WebGL stuff
-part 'gl/shader.dart';
-part 'gl/texture.dart';
-part 'gl/framebuffer.dart';
-part 'gl/vertexbatch.dart';
+part 'src/gl/shader.dart';
+part 'src/gl/texture.dart';
+part 'src/gl/framebuffer.dart';
+part 'src/gl/vertexbatch.dart';
 
 //2D stuff
-part '2d/spritebatch.dart';
-part '2d/fontrenderer.dart';
-part '2d/animation.dart';
+part 'src/2d/spritebatch.dart';
+part 'src/2d/fontrenderer.dart';
+part 'src/2d/animation.dart';
 
 //3D stuff
-part '3d/geometry.dart';
-part '3d/material.dart';
-part '3d/mesh.dart';
-part '3d/tessellator.dart';
-part 'util/objparser.dart';
-part '3d/meshrenderer.dart';
+part 'src/3d/geometry.dart';
+part 'src/3d/material.dart';
+part 'src/3d/mesh.dart';
+part 'src/3d/model.dart';
+part 'src/3d/tessellator.dart';
+part 'src/3d/modelrenderer.dart';
+part 'src/3d/camera.dart';
+part 'src/util/objparser.dart';
+
 
 //Audio
-part 'audio/streaming.dart';
-part 'audio/webaudio.dart';
-part 'audio/oscillator.dart';
-part 'audio/generator.dart';
+part 'src/audio/streaming.dart';
+part 'src/audio/webaudio.dart';
+part 'src/audio/oscillator.dart';
+part 'src/audio/generator.dart';
 
 //UI
-part 'ui/component.dart';
-part 'ui/event.dart';
-part 'ui/button.dart';
+part 'src/ui/component.dart';
+part 'src/ui/event.dart';
+part 'src/ui/button.dart';
 
 //Other Util
-part 'util/time.dart';
+part 'src/util/time.dart';
 
 abstract class BaseGame {
 
@@ -109,7 +112,11 @@ abstract class BaseGame {
    * Base game constructor. [frameRate] is only used when useAnimFrame is false,
    * otherwise render() will be called on every anim frame.
    */
-  BaseGame(this.canvas, {double frameRate: 60.0, double tickRate: 60.0, bool useDeltaTime: false, bool useAnimFrame: true}) {
+  BaseGame(this.canvas,
+           { double frameRate: 60.0,
+             double tickRate: 60.0,
+             bool useDeltaTime: false,
+             bool useAnimFrame: true }) {
     canvas.onContextMenu.listen((Event e) => e.preventDefault());
     gl = createContext3d();
     _timePerFrame = 1 / (1000.0 / frameRate);
@@ -392,11 +399,11 @@ abstract class BaseGame {
   int get mouseY => _mouseY;
 
   /**
-   * The percent of a game computation tick that has elapsed since the last tick.
-   * For example, of a game has 1 computation tick every 50 milliseconds, and
-   * the a frame renders 20 milliseconds after the last computation tick,
-   * [partialTick] will be 0.4. If useDeltaTime was set to true in the constructor,
-   * this will always be 0.0
+   * The percent of a game computation tick that has elapsed since the last
+   * tick. For example, of a game has 1 computation tick every 50 milliseconds,
+   * and the a frame renders 20 milliseconds after the last computation tick,
+   * [partialTick] will be 0.4. If useDeltaTime was set to true in the
+   * constructor, this will always be 0.0
    */
   double get partialTick => _partialTick;
 
@@ -428,7 +435,8 @@ int nextPowerOf2(int val) {
 }
 
 /**
- * Sets the VertexAttribArray [array] to be either enabled or disabled based on [active]
+ * Sets the VertexAttribArray [array] to be either enabled or disabled based
+ * on [active]
  */
 void setVertexAttribArray(WebGL.RenderingContext gl, int array, bool active) {
   if (active)
