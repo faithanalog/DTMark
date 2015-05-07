@@ -215,7 +215,7 @@ abstract class BaseGame {
     //This directly accesses the JS objects to work around a bug with CocoonJS
     //which causes errors when going through Dart
     JsObject ev      = new JsObject.fromBrowserObject(evt);
-    JsArray touchArr = new JsObject.fromBrowserObject(ev["changedTouchs"]);
+    JsArray touchArr = new JsObject.fromBrowserObject(ev["changedTouches"]);
     JsObject touch   = new JsObject.fromBrowserObject(touchArr[0]);
     Point offset = new Point(touch["clientX"], touch["clientY"]) - canvas.client.topLeft;
     return _transformEventPoint(offset);
