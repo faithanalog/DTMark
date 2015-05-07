@@ -50,7 +50,13 @@ part 'src/util/time.dart';
 
 abstract class BaseGame {
 
-  static bool touchSupport = null;
+  static bool _touchSupport = null;
+
+  /**
+   * Set this to true to use window.onTouchX instead of canvas.onTouchX.
+   * May be required by some technologies such as CocoonJS
+   */
+  static bool useWindowTouchEvents = false;
 
   CanvasElement canvas;
   WebGL.RenderingContext gl;
@@ -124,28 +130,35 @@ abstract class BaseGame {
     _useAnimFrame = useAnimFrame;
     _useDeltaTime = useDeltaTime;
 
-    if (touchSupport == null)
-      touchSupport = new JsObject.fromBrowserObject(window).hasProperty("ontouchstart");
+    if (_touchSupport == null)
+      _touchSupport = new JsObject.fromBrowserObject(window).hasProperty("ontouchstart");
 
-    if (!touchSupport) {
+    if (!_touchSupport) {
       _subscribeMouseAndKeyEvents();
     } else {
-      var tStart = canvas.onTouchStart.listen((evt) {
+      touchStartHandler(evt) {
         var p = _getTouchPoint(evt);
         _onMouseDown(p.x, p.y, 0);
         evt.preventDefault();
-      });
-      var tEnd = canvas.onTouchEnd.listen((evt) {
+      }
+
+      touchEndHandler(evt) {
         var p = _getTouchPoint(evt);
         _onMouseUp(p.x, p.y, 0);
         _onMouseMove(-1, -1);
         evt.preventDefault();
-      });
-      var tMove = canvas.onTouchMove.listen((evt) {
+      }
+
+      touchMoveHandler(evt) {
         var p = _getTouchPoint(evt);
         _onMouseMove(p.x, p.y);
         evt.preventDefault();
-      });
+      }
+
+      var target = useWindowTouchEvents ? window : canvas;
+      var tStart = target.onTouchStart.listen(touchStartHandler);
+      var tEnd   = target.onTouchEnd.listen(touchEndHandler);
+      var tMove  = target.onTouchMove.listen(touchMoveHandler);
 
       //There's no reliable way to detect presence of mouse hardware,
       //so if we receive a mouse move event we assume the user
