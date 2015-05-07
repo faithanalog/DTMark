@@ -318,7 +318,7 @@ abstract class BaseGame {
   void _onMouseMove(int x, int y) {
     _mouseX = x;
     _mouseY = _invertIfNeeded(y);
-    mouseMove(x, y);
+    mouseMove(_mouseX, _mouseY);
     _mouseMoveController.add(new GameMouseEvent(_mouseX, _mouseY, -1));
   }
 
