@@ -217,7 +217,12 @@ abstract class BaseGame {
     JsObject ev      = new JsObject.fromBrowserObject(evt);
     JsArray touchArr = new JsObject.fromBrowserObject(ev["changedTouches"]);
     JsObject touch   = new JsObject.fromBrowserObject(touchArr[0]);
-    Point offset = new Point(touch["clientX"], touch["clientY"]) - canvas.client.topLeft;
+    Point offset;
+    if (useWindowTouchEvents) {
+      offset = new Point(touch["screenX"], touch["screenY"]);
+    } else {
+      offset = new Point(touch["clientX"], touch["clientY"]) - canvas.client.topLeft;
+    }
     return _transformEventPoint(offset);
   }
 
